@@ -7,17 +7,25 @@ namespace Maca
 {
     public class GUIManager : Singleton<GUIManager>
     {
-        public GameObject Intro;                     
-        public GameObject Selections;                       
-        public GameObject Settings;
-        public GameObject InGame;
+        public GameObject intro;                     
+        public GameObject mainSelections;                       
+        public GameObject gameModeSettings;
+        //public GameObject inGame;
 
-        public void GoSelectionScreen()
+        public void goMainSelectionScreen()
         {
-            Intro.SetActive(false);
-            Selections.SetActive(true);
-            //Settings.SetActive(false);
-            //InGame.SetActive(false);
+            intro.SetActive(false);
+            mainSelections.SetActive(true);
+            gameModeSettings.SetActive(false);
+            //inGame.SetActive(false);
+        }
+
+        public void goGameModeSettingScreen()
+        {
+            intro.SetActive(false);
+            mainSelections.SetActive(false);
+            gameModeSettings.SetActive(true);
+            //inGame.SetActive(false);
         }
     }
 }
