@@ -6,12 +6,20 @@ using System.Collections.Generic;
 public class ButtonManager : MonoBehaviour
 {
     public GameObject gameModes;
+
     public List<GameObject> typeOfMode = new List<GameObject>();
     public List<int> mode = new List<int>();
+
     public Color selected;
     public Color selectedShadow;
     public Color notSelected;
     public Color notSelectedShadow;
+
+    public string size;
+    public string difficulty;
+    public string time;
+    public string image;
+    public string category;
 
     private void Start()
     {
@@ -62,5 +70,23 @@ public class ButtonManager : MonoBehaviour
                 child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = notSelectedShadow;
             }
         }
+    }
+
+    public void GetChoiceValues()
+    {
+        GameObject buttonGroup = GameObject.Find("Time");
+        time = buttonGroup.transform.GetChild(mode[buttonGroup.transform.GetSiblingIndex()]).name;
+
+        buttonGroup = GameObject.Find("Difficulty");
+        difficulty = buttonGroup.transform.GetChild(mode[buttonGroup.transform.GetSiblingIndex()]).name;
+
+        buttonGroup = GameObject.Find("Category");
+        category = buttonGroup.transform.GetChild(mode[buttonGroup.transform.GetSiblingIndex()]).name;
+
+        buttonGroup = GameObject.Find("Size");
+        size = buttonGroup.transform.GetChild(mode[buttonGroup.transform.GetSiblingIndex()]).name;
+
+        buttonGroup = GameObject.Find("Image");
+        image = buttonGroup.transform.GetChild(mode[buttonGroup.transform.GetSiblingIndex()]).name;
     }
 }

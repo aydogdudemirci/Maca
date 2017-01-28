@@ -12,6 +12,13 @@ namespace Maca
         public GameObject gameModeSettings;
         public GameObject gameIsOn;
 
+        public static bool isPseudo;
+
+        private void Awake()
+        {
+            isPseudo = true;
+        }
+
         public void goMainSelectionScreen()
         {
             intro.SetActive(false);
