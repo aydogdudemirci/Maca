@@ -12,6 +12,9 @@ namespace Maca
         public GameObject gameModeSettings;
         public GameObject gameIsOn;
 
+        public GameObject gamePanel;
+        GameObject gameStuff;
+
         public static bool isPseudo;
 
         private void Awake()
@@ -33,6 +36,8 @@ namespace Maca
             mainSelections.SetActive(false);
             gameModeSettings.SetActive(true);
             gameIsOn.SetActive(false);
+
+            Destroy(gameStuff);
         }
 
         public void goGameIsOnScreen()
@@ -41,6 +46,11 @@ namespace Maca
             mainSelections.SetActive(false);
             gameModeSettings.SetActive(false);
             gameIsOn.SetActive(true);
+
+            gameStuff = Instantiate(gamePanel, Vector2.zero, Quaternion.identity) as GameObject;
+            gameStuff.transform.SetParent(gameIsOn.transform);
+            gameStuff.transform.localScale = new Vector3(1.0f, 1.0f);
+            gameStuff.transform.localPosition = new Vector3(-535.0f, 310.0f);
         }
     }
 }

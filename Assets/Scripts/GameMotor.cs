@@ -12,9 +12,8 @@ public class GameMotor : MonoBehaviour
     public GameObject blackBox;
     public GameObject emptyBox;
 
-    public GameObject gridPanel;
-    public GameObject questionPanel;
-    public GameObject gameScreen;
+    public GameObject gamePanel;
+    public GameObject gameBoard;
 
     public List<GameObject> boxes = new List<GameObject>();
    
@@ -39,7 +38,7 @@ public class GameMotor : MonoBehaviour
 
     void Start()
     {
-        Motor grid = gameScreen.GetComponent<Motor>();
+        Motor puzzle = gamePanel.GetComponent<Motor>();
 
         instantiateBox(emptyBox, -1);
 
@@ -54,7 +53,7 @@ public class GameMotor : MonoBehaviour
 
             for(int j=0; j<x; j++)
             {
-                if (grid.puzzleGrid[index] == 0)
+                if (puzzle.puzzleGrid[index] == 0)
                 {
                     instantiateBox(letterBox, -1);
                 }
@@ -74,7 +73,7 @@ public class GameMotor : MonoBehaviour
         GameObject aBox = null;
 
         aBox = Instantiate(type, Vector2.zero, Quaternion.identity) as GameObject;
-        aBox.transform.SetParent(gridPanel.transform);
+        aBox.transform.SetParent(gameBoard.transform);
         aBox.transform.localScale = new Vector3(1.0f, 1.0f);
 
         if(number != -1)
