@@ -4,8 +4,6 @@ using UnityEngine.UI;
 
 namespace Maca
 {
-    enum direction { right, down };
-
     public class GameExecutive : Singleton<GameExecutive>
     {
         private int index, x, y;
@@ -114,5 +112,4 @@ namespace Maca
             GUIManager.Instance.gameBoard.transform.position = GUIManager.Instance.reference.position;
         }
     }
-
 }
