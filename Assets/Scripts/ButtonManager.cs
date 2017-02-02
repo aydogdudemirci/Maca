@@ -1,91 +1,75 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 
-public class ButtonManager : MonoBehaviour
+namespace Maca
 {
-    public GameObject gameModes;
-
-    public List<GameObject> typeOfMode = new List<GameObject>();
-    public List<int> mode = new List<int>();
-
-    public Color selected;
-    public Color selectedShadow;
-    public Color notSelected;
-    public Color notSelectedShadow;
-
-    public string size;
-    public string difficulty;
-    public string time;
-    public string image;
-    public string category;
-
-    private void Start()
+    public class ButtonManager : Singleton<ButtonManager>
     {
-        foreach (Transform child in gameModes.transform)
+        private List<GameObject> typeOfSetting = new List<GameObject>();
+        private List<int> selectedMode = new List<int>();
+
+        private void Awake()
         {
-            typeOfMode.Add(child.gameObject);
+            instance = this;
         }
 
-        for (int i = 0; i < typeOfMode.Count; i++)
+        private void Start()
         {
-            mode.Add(0);
-        }
-
-        foreach (GameObject value in typeOfMode)
-        {
-            foreach (Transform child in value.transform)
+            foreach (Transform child in GUIManager.Instance.gameModes.transform)
             {
-                if (mode[child.parent.GetSiblingIndex()] == child.GetSiblingIndex())
+                typeOfSetting.Add(child.gameObject);
+            }
+
+            for (int i = 0; i < typeOfSetting.Count; i++)
+            {
+                selectedMode.Add(0);
+            }
+
+            foreach (GameObject value in typeOfSetting)
+            {
+                foreach (Transform child in value.transform)
                 {
-                    child.GetChild(0).GetComponent<Image>().color = selected;
-                    child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = selectedShadow;
+                    if (selectedMode[child.parent.GetSiblingIndex()] == child.GetSiblingIndex())
+                    {
+                        child.GetChild(0).GetComponent<Image>().color = GUIManager.Instance.selectedLed;
+                        child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.selectedLedShadow;
+                    }
+
+                    else
+                    {
+                        child.GetChild(0).GetComponent<Image>().color = GUIManager.Instance.notSelectedLed;
+                        child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.notSelectedLedShadow;
+                    }
+                }
+            }
+        }
+
+        public void ChangeColor(Button button)
+        {
+            selectedMode[button.transform.parent.GetSiblingIndex()] = button.transform.GetSiblingIndex();
+
+            foreach (Transform child in button.transform.parent)
+            {
+                if (selectedMode[child.parent.GetSiblingIndex()] == child.GetSiblingIndex())
+                {
+                    child.GetChild(0).gameObject.GetComponent<Image>().color = GUIManager.Instance.selectedLed;
+                    child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.selectedLedShadow;
                 }
 
                 else
                 {
-                    child.GetChild(0).GetComponent<Image>().color = notSelected;
-                    child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = notSelectedShadow;
+                    child.GetChild(0).gameObject.GetComponent<Image>().color = GUIManager.Instance.notSelectedLed;
+                    child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.notSelectedLedShadow;
                 }
             }
         }
-    }
 
-    public void ChangeColor(Button button)
-    {
-        mode[button.transform.parent.GetSiblingIndex()] = button.transform.GetSiblingIndex();
-
-        foreach (Transform child in button.transform.parent)
+        public string getSetting(string request)
         {
-            if (mode[child.parent.GetSiblingIndex()] == child.GetSiblingIndex())
-            {
-                child.GetChild(0).gameObject.GetComponent<Image>().color = selected;
-                child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = selectedShadow;
-            }
+            GameObject settingType = GameObject.Find(request);
 
-            else
-            {
-                child.GetChild(0).gameObject.GetComponent<Image>().color = notSelected;
-                child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = notSelectedShadow;
-            }
+            return settingType.transform.GetChild(selectedMode[settingType.transform.GetSiblingIndex()]).name;
         }
-    }
-
-    public void GetChoiceValues()
-    {
-        GameObject buttonGroup = GameObject.Find("Time");
-        time = buttonGroup.transform.GetChild(mode[buttonGroup.transform.GetSiblingIndex()]).name;
-
-        buttonGroup = GameObject.Find("Difficulty");
-        difficulty = buttonGroup.transform.GetChild(mode[buttonGroup.transform.GetSiblingIndex()]).name;
-
-        buttonGroup = GameObject.Find("Category");
-        category = buttonGroup.transform.GetChild(mode[buttonGroup.transform.GetSiblingIndex()]).name;
-
-        buttonGroup = GameObject.Find("Size");
-        size = buttonGroup.transform.GetChild(mode[buttonGroup.transform.GetSiblingIndex()]).name;
-
-        buttonGroup = GameObject.Find("Image");
-        image = buttonGroup.transform.GetChild(mode[buttonGroup.transform.GetSiblingIndex()]).name;
     }
 }

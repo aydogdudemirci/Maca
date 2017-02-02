@@ -1,132 +1,118 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
-using Maca;
 
-enum direction { right, down };
-
-public class GameExecutive : MonoBehaviour
+namespace Maca
 {
-    public GameObject letterBox;
-    public GameObject numberBox;
-    public GameObject blackBox;
-    public GameObject emptyBox;
+    enum direction { right, down };
 
-    public GameObject gamePanel;
-    public GameObject gameBoard;
-
-    public List<GameObject> boxes = new List<GameObject>();
-   
-    int x, y;   //crossword sizes
-    int index;
-
-    private void Awake()
+    public class GameExecutive : Singleton<GameExecutive>
     {
-        index = 0;
+        private int index, x, y;
 
-        if (GUIManager.isPseudo)
+        private void Awake()
         {
-            x = 10;
-            y = 10;
-        }
+            instance = this;
 
-        else
-        {
-            //Get size from settings
-        }
-
-        calculateProperGridValues(x, y);
-    }
-
-    private void Start()
-    {
-        createGrid();
-    }
-    
-    private void createGrid()
-    {
-        Motor puzzle = gamePanel.GetComponent<Motor>();
-
-        instantiateBox(emptyBox, -1);
-
-        for (int i = 1; i < x + 1; i++)
-        {
-            instantiateBox(numberBox, i);
-        }
-
-        for (int i = 1; i < y + 1; i++)
-        {
-            instantiateBox(numberBox, i);
-
-            for (int j = 0; j < x; j++)
+            if (GUIManager.Instance.isPseudo)
             {
-                if (puzzle.puzzleGrid[index] == 0)
-                {
-                    instantiateBox(letterBox, -1);
-                }
+                x = GUIManager.Instance.sizeX;
+                y = GUIManager.Instance.sizeY;
+            }
 
-                else
-                {
-                    instantiateBox(blackBox, -1);
-                }
-
-                index++;
+            else
+            {
+                //Get size from settings
             }
         }
+
+        private void Start()
+        {
+            index = 0;
+
+            createGrid();
+            StartCoroutine(calculateProperGridSize(x, y));
+            StartCoroutine(gridAlignmentProperlyOnScreen());
+        }
+
+        private void createGrid()
+        {
+            instantiateBox(GUIManager.Instance.emptyBox, -1);
+
+            for (int i = 1; i < x + 1; i++)
+            {
+                instantiateBox(GUIManager.Instance.numberBox, i);
+            }
+
+            for (int i = 1; i < y + 1; i++)
+            {
+                instantiateBox(GUIManager.Instance.numberBox, i);
+
+                for (int j = 0; j < x; j++)
+                {
+                    if (Motor.Instance.puzzleGrid[index] == 0)
+                    {
+                        instantiateBox(GUIManager.Instance.letterBox, -1);
+                    }
+
+                    else
+                    {
+                        instantiateBox(GUIManager.Instance.blackBox, -1);
+                    }
+
+                    index++;
+                }
+            }
+        }
+
+        private void instantiateBox(GameObject type, int number)
+        {
+            GameObject aBox = null;
+
+            aBox = Instantiate(type, Vector2.zero, Quaternion.identity) as GameObject;
+            aBox.transform.SetParent(GUIManager.Instance.gameBoard.transform);
+            aBox.transform.localScale = new Vector3(1.0f, 1.0f);
+
+            if (number != -1)
+            {
+                aBox.GetComponentInChildren<Text>().text = (number).ToString();
+            }
+
+            GUIManager.Instance.boxes.Add(aBox);
+        }
+
+        private IEnumerator calculateProperGridSize(int x, int y)
+        {
+            yield return new WaitForEndOfFrame();
+
+            int max = System.Math.Max(x, y);
+
+            if (max < 11)
+            {
+                GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().cellSize = new Vector2(80.0f, 80.0f);
+                GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().spacing = new Vector2(10.0f, 10.0f);
+                GUIManager.Instance.numberBox.GetComponentInChildren<Text>().fontSize = 60;
+            }
+
+            else
+            {
+                GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().cellSize = new Vector2(830.0f / max, 830.0f / max);
+
+                float cellSize = GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().cellSize.x;
+
+                GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().spacing = new Vector2(10 - (80 / cellSize), 10 - (80 / cellSize));
+                GUIManager.Instance.numberBox.GetComponentInChildren<Text>().fontSize = 60 - (max - 10) * 5 / 2;
+            }
+
+            GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().constraintCount = x + 1;
+        }
+
+        private IEnumerator gridAlignmentProperlyOnScreen()
+        {
+            yield return new WaitForEndOfFrame();
+
+            GUIManager.Instance.gameBoard.transform.position = GUIManager.Instance.reference.position;
+        }
     }
 
-    private void instantiateBox(GameObject type, int number)
-    {
-        GameObject aBox = null;
-
-        aBox = Instantiate(type, Vector2.zero, Quaternion.identity) as GameObject;
-        aBox.transform.SetParent(gameBoard.transform);
-        aBox.transform.localScale = new Vector3(1.0f, 1.0f);
-
-        if(number != -1)
-        {
-            aBox.GetComponentInChildren<Text>().text = (number).ToString();
-        }
-
-        boxes.Add(aBox);
-    }
-
-    private void calculateProperGridValues(int x, int y)
-    {
-        int max = System.Math.Max(x, y);
-
-        if(max < 11)
-        {
-            gameBoard.GetComponent<GridLayoutGroup>().cellSize = new Vector2(80.0f, 80.0f);
-            numberBox.GetComponentInChildren<Text>().fontSize = 60;
-        }
-
-        else
-        {
-            gameBoard.GetComponent<GridLayoutGroup>().cellSize = new Vector2(750.0f / max, 750.0f / max);
-            numberBox.GetComponentInChildren<Text>().fontSize = 60 - (max - 10) * 5 / 2;
-        }
-
-        if(x < 11)
-        {
-            gameBoard.GetComponent<GridLayoutGroup>().padding.left = 750 + (10 - x) * 50;
-        }
-
-        else
-        {
-            gameBoard.GetComponent<GridLayoutGroup>().padding.left = 750;
-        }
-
-        if(y < 11)
-        {
-            gameBoard.GetComponent<GridLayoutGroup>().padding.top = 50 + (10 - y) * 40;
-        }
-
-        else
-        {
-            gameBoard.GetComponent<GridLayoutGroup>().padding.top = 50;
-        }
-
-        gameBoard.GetComponent<GridLayoutGroup>().constraintCount = x + 1;
-    }
 }

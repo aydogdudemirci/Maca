@@ -1,56 +1,93 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Maca
 {
     public class GUIManager : Singleton<GUIManager>
     {
-        public GameObject intro;                     
-        public GameObject mainSelections;                       
-        public GameObject gameModeSettings;
-        public GameObject gameIsOn;
+        [SerializeField]
+        public bool isPseudo;
+        public int sizeX, sizeY;
+
+        public GameObject Player;
+        private GameObject myPlayer;
+
+        public GameObject introScreen;
+        public GameObject mainSelectionsScreen;
+        public GameObject gameModeSettingsScreen;
+        public GameObject gameIsOnScreen;
+
+        public GameObject letterBox;
+        public GameObject numberBox;
+        public GameObject blackBox;
+        public GameObject emptyBox;
 
         public GameObject gamePanel;
-        GameObject gameStuff;
+        public GameObject gameBoard;
+        public GameObject gameModes;
 
-        public static bool isPseudo;
+        public Color selectedLed;
+        public Color selectedLedShadow;
+        public Color notSelectedLed;
+        public Color notSelectedLedShadow;
+
+        public Transform reference;
+
+        public List<GameObject> boxes = new List<GameObject>();
 
         private void Awake()
         {
-            isPseudo = true;
+            instance = this;
+        }
+
+        private void Start()
+        {
+            myPlayer = null;
         }
 
         public void goMainSelectionScreen()
         {
-            intro.SetActive(false);
-            mainSelections.SetActive(true);
-            gameModeSettings.SetActive(false);
-            gameIsOn.SetActive(false);
+            introScreen.SetActive(false);
+            mainSelectionsScreen.SetActive(true);
+            gameModeSettingsScreen.SetActive(false);
+            gameIsOnScreen.SetActive(false);
         }
 
         public void goGameModeSettingScreen()
         {
-            intro.SetActive(false);
-            mainSelections.SetActive(false);
-            gameModeSettings.SetActive(true);
-            gameIsOn.SetActive(false);
+            introScreen.SetActive(false);
+            mainSelectionsScreen.SetActive(false);
+            gameModeSettingsScreen.SetActive(true);
+            gameIsOnScreen.SetActive(false);
 
-            Destroy(gameStuff);
+            destroyPuzzle();
         }
 
         public void goGameIsOnScreen()
         {
-            intro.SetActive(false);
-            mainSelections.SetActive(false);
-            gameModeSettings.SetActive(false);
-            gameIsOn.SetActive(true);
+            introScreen.SetActive(false);
+            mainSelectionsScreen.SetActive(false);
+            gameModeSettingsScreen.SetActive(false);
+            gameIsOnScreen.SetActive(true);
 
-            gameStuff = Instantiate(gamePanel, Vector2.zero, Quaternion.identity) as GameObject;
-            gameStuff.transform.SetParent(gameIsOn.transform);
-            gameStuff.transform.localScale = new Vector3(1.0f, 1.0f);
-            gameStuff.transform.localPosition = new Vector3(-535.0f, 310.0f);
+            createPlayer();
+        }
+
+        private void createPlayer()
+        {
+            myPlayer = Instantiate(Player, Vector2.zero, Quaternion.identity) as GameObject;
+            myPlayer.transform.SetParent(gameObject.transform.parent);
+        }
+
+        private void destroyPuzzle()
+        {
+            for (int i = 0; i < boxes.Count; i++)
+            {
+                Destroy(boxes[i]);
+            }
+
+            boxes.Clear();
+            Destroy(myPlayer);
         }
     }
 }
