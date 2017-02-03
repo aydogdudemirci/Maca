@@ -11,30 +11,18 @@ namespace Maca
         private void Awake()
         {
             instance = this;
-
-            if (GUIManager.Instance.isPseudo)
-            {
-                x = GUIManager.Instance.sizeX;
-                y = GUIManager.Instance.sizeY;
-            }
-
-            else
-            {
-                //Get size from settings
-            }
         }
 
         private void Start()
         {
             index = 0;
-
-            createGrid();
-            StartCoroutine(calculateProperGridSize(x, y));
-            StartCoroutine(gridAlignmentProperlyOnScreen());
         }
 
-        private void createGrid()
+        public void createGrid()
         {
+            x = GUIManager.Instance.sizeX;
+            y = GUIManager.Instance.sizeY;
+
             instantiateBox(GUIManager.Instance.emptyBox, -1);
 
             for (int i = 1; i < x + 1; i++)
@@ -61,6 +49,9 @@ namespace Maca
                     index++;
                 }
             }
+
+            StartCoroutine(calculateProperGridSize(x, y));
+            StartCoroutine(gridAlignmentProperlyOnScreen());
         }
 
         private void instantiateBox(GameObject type, int number)

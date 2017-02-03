@@ -9,9 +9,6 @@ namespace Maca
         public bool isPseudo;
         public int sizeX, sizeY;
 
-        public GameObject Player;
-        private GameObject myPlayer;
-
         public GameObject introScreen;
         public GameObject mainSelectionsScreen;
         public GameObject gameModeSettingsScreen;
@@ -40,11 +37,6 @@ namespace Maca
             instance = this;
         }
 
-        private void Start()
-        {
-            myPlayer = null;
-        }
-
         public void goMainSelectionScreen()
         {
             introScreen.SetActive(false);
@@ -60,7 +52,10 @@ namespace Maca
             gameModeSettingsScreen.SetActive(true);
             gameIsOnScreen.SetActive(false);
 
-            destroyPuzzle();
+            if(boxes != null)
+            {
+                destroyPuzzle();
+            }
         }
 
         public void goGameIsOnScreen()
@@ -70,13 +65,8 @@ namespace Maca
             gameModeSettingsScreen.SetActive(false);
             gameIsOnScreen.SetActive(true);
 
-            createPlayer();
-        }
-
-        private void createPlayer()
-        {
-            myPlayer = Instantiate(Player, Vector2.zero, Quaternion.identity) as GameObject;
-            myPlayer.transform.SetParent(gameObject.transform.parent);
+            Motor.Instance.createPuzzle();
+            GameExecutive.Instance.createGrid();
         }
 
         private void destroyPuzzle()
@@ -87,7 +77,6 @@ namespace Maca
             }
 
             boxes.Clear();
-            Destroy(myPlayer);
         }
     }
 }

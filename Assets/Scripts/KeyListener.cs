@@ -14,7 +14,7 @@ namespace Maca
             instance = this;
         }
 
-        void OnGUI()
+        void Update()
         {
             if (Input.anyKeyDown)
             {
@@ -53,7 +53,7 @@ namespace Maca
                     shift();
                 }
 
-                else if (System.Text.RegularExpressions.Regex.IsMatch(Input.inputString, @"^[a-zA-ZıIğĞüÜşŞiİöÖçÇ]+$"))
+                else if (System.Text.RegularExpressions.Regex.IsMatch(Input.inputString, @"^[\p{L}]+$"))
                 {
                     if (Input.inputString == "i" || Input.inputString == "İ")
                     {
@@ -66,13 +66,15 @@ namespace Maca
                     }
 
                     write(key);
+                    Debug.Log(key);
                 }
 
-                else if(System.Text.RegularExpressions.Regex.IsMatch(Input.inputString, @"^[0-9]+$"))
+                else if(System.Text.RegularExpressions.Regex.IsMatch(Input.inputString, @"^[\p{N}]+$"))
                 {
                     key = Input.inputString;
 
                     goToCell(key);
+                    Debug.Log(key);
                 }
             }
         }

@@ -45,7 +45,7 @@ namespace Maca
             }
         }
 
-        public void ChangeColor(Button button)
+        public void changeColor(Button button)
         {
             selectedMode[button.transform.parent.GetSiblingIndex()] = button.transform.GetSiblingIndex();
 

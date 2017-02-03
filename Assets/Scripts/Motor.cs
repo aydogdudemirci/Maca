@@ -16,22 +16,16 @@ namespace Maca
             instance = this;
         }
 
-        void Start ()
+        public void createPuzzle()
         {
             if (GUIManager.Instance.isPseudo)
             {
                 pseudoPuzzle();
             }
-
             else
             {
-                createPuzzle();
+                //automatic puzzle creation process will starts from here
             }
-        }
-
-        void createPuzzle()
-        {
-            //automatic puzzle creation process will starts from here
         }
 
         void pseudoPuzzle()
