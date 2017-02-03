@@ -4,8 +4,8 @@ namespace Maca
 {
     public class KeyListener : Singleton<KeyListener>
     {
-        enum direction { right, down };
-        enum tour { LEFT, RIGHT, UP, DOWN };
+        enum direction { LEFTTORIGHT, UPTODOWN };
+        enum arrow { LEFT, RIGHT, UP, DOWN };
 
         public string key;
 
@@ -20,22 +20,22 @@ namespace Maca
             {
                 if (Input.GetKeyDown(KeyCode.DownArrow))
                 {
-                    go(tour.DOWN);
+                    go(arrow.DOWN);
                 }
 
                 else if (Input.GetKeyDown(KeyCode.UpArrow))
                 {
-                    go(tour.UP);
+                    go(arrow.UP);
                 }
 
                 else if (Input.GetKeyDown(KeyCode.LeftArrow))
                 {
-                    go(tour.LEFT);
+                    go(arrow.LEFT);
                 }
 
                 else if (Input.GetKeyDown(KeyCode.RightArrow))
                 {
-                    go(tour.RIGHT);
+                    go(arrow.RIGHT);
                 }
 
                 else if (Input.GetKeyDown(KeyCode.Backspace))
@@ -79,7 +79,7 @@ namespace Maca
             }
         }
 
-        private void go(tour request)
+        private void go(arrow request)
         {
 
         }

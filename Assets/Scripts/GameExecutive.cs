@@ -20,8 +20,17 @@ namespace Maca
 
         public void createGrid()
         {
-            x = GUIManager.Instance.sizeX;
-            y = GUIManager.Instance.sizeY;
+            if(GUIManager.Instance.isPseudo)
+            {
+                x = GUIManager.Instance.sizeX;
+                y = GUIManager.Instance.sizeY;
+            }
+
+            else
+            {
+                //get size values from DataManager
+            }
+
 
             instantiateBox(GUIManager.Instance.emptyBox, -1);
 

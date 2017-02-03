@@ -23,7 +23,15 @@ namespace Maca
 
             for (int i = 0; i < typeOfSetting.Count; i++)
             {
-                selectedMode.Add(0);
+                if(GUIManager.Instance.isPseudo)
+                {
+                    selectedMode.Add(0);
+                }
+
+                else
+                {
+                    // selectedMode.Add(DataManager.Instance.getPlayerPrefs(i));
+                }
             }
 
             foreach (GameObject value in typeOfSetting)
@@ -63,6 +71,11 @@ namespace Maca
                     child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.notSelectedLedShadow;
                 }
             }
+        }
+
+        public void savePreferences()
+        {
+            //save preferences via DataManager.cs
         }
 
         public string getSetting(string request)
