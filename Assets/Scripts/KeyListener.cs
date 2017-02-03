@@ -65,8 +65,7 @@ namespace Maca
                         key = Input.inputString.ToUpper();
                     }
 
-                    
-                    Debug.Log(key);
+                    GamePlay.Instance.write(key);
                 }
 
                 else if(System.Text.RegularExpressions.Regex.IsMatch(Input.inputString, @"^[\p{N}]+$"))

@@ -2,11 +2,23 @@
 
 namespace Maca
 {
+    public class XYCouple
+    {
+        public int x;
+        public int y;
+
+        public XYCouple(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
     public class GUIManager : Singleton<GUIManager>
     {
         [SerializeField]
         public bool isPseudo;
-        public int sizeX, sizeY;
+        public int X, Y;
 
         public GameObject introScreen;
         public GameObject mainSelectionsScreen;
@@ -26,6 +38,9 @@ namespace Maca
         public Color selectedLedShadow;
         public Color notSelectedLed;
         public Color notSelectedLedShadow;
+
+        public Color highlightLight;
+        public Color highlightDark;
 
         public Transform reference;
 

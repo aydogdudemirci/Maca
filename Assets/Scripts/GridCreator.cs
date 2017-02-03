@@ -7,10 +7,11 @@ namespace Maca
 {
     public class GridCreator : Singleton<GridCreator>
     {
-        List<List<GameObject>> grid;
-        List<GameObject> row;
+        public List<List<GameObject>> grid;
+        public List<GameObject> row;
 
-        private int index, x, y;
+        private XYCouple size;
+        private int index;
 
         private void Awake()
         {
@@ -26,8 +27,7 @@ namespace Maca
         {
             if (GUIManager.Instance.isPseudo)
             {
-                x = GUIManager.Instance.sizeX;
-                y = GUIManager.Instance.sizeY;
+                size = new XYCouple(GUIManager.Instance.X, GUIManager.Instance.Y);
             }
 
             else
@@ -37,11 +37,11 @@ namespace Maca
 
             grid = new List<List<GameObject>>();
 
-            for (int i = 0; i < x + 1; i++)
+            for (int i = 0; i < size.y + 1; i++)
             {
                 row = new List<GameObject>();
 
-                for (int j = 0; j< y + 1; j++)
+                for (int j = 0; j< size.x + 1; j++)
                 {
                     row.Add( instantiateBox( decideBoxType(i, j), i, j) );
                 }
@@ -49,7 +49,7 @@ namespace Maca
                 grid.Add(row);
             }
 
-            StartCoroutine(calculateProperGridSize(x, y));
+            StartCoroutine(calculateProperGridSize(size.x, size.y));
             StartCoroutine(gridAlignmentProperlyOnScreen());
         }
 
@@ -140,15 +140,15 @@ namespace Maca
         {
             if( grid != null)
             {
-                for (int i = 0; i < x + 1; i++)
+                for (int i = 0; i < size.x + 1; i++)
                 {
-                    for (int j = 0; j < y + 1; j++)
+                    for (int j = 0; j < size.y + 1; j++)
                     {
                         Destroy(grid[i][j]);
                     }
                 }
 
-                for(int i = 0; i < x + 1; i++)
+                for(int i = 0; i < size.x + 1; i++)
                 {
                     grid[i].Clear();
                 }
