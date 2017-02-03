@@ -1,11 +1,15 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Maca
 {
-    public class GameExecutive : Singleton<GameExecutive>
+    public class GridCreator : Singleton<GridCreator>
     {
+        List<List<GameObject>> grid;
+        List<GameObject> row;
+
         private int index, x, y;
 
         private void Awake()
@@ -20,7 +24,7 @@ namespace Maca
 
         public void createGrid()
         {
-            if(GUIManager.Instance.isPseudo)
+            if (GUIManager.Instance.isPseudo)
             {
                 x = GUIManager.Instance.sizeX;
                 y = GUIManager.Instance.sizeY;
@@ -31,39 +35,57 @@ namespace Maca
                 //get size values from DataManager
             }
 
+            grid = new List<List<GameObject>>();
 
-            instantiateBox(GUIManager.Instance.emptyBox, -1);
-
-            for (int i = 1; i < x + 1; i++)
+            for (int i = 0; i < x + 1; i++)
             {
-                instantiateBox(GUIManager.Instance.numberBox, i);
-            }
+                row = new List<GameObject>();
 
-            for (int i = 1; i < y + 1; i++)
-            {
-                instantiateBox(GUIManager.Instance.numberBox, i);
-
-                for (int j = 0; j < x; j++)
+                for (int j = 0; j< y + 1; j++)
                 {
-                    if (Motor.Instance.puzzleGrid[index] == 0)
-                    {
-                        instantiateBox(GUIManager.Instance.letterBox, -1);
-                    }
-
-                    else
-                    {
-                        instantiateBox(GUIManager.Instance.blackBox, -1);
-                    }
-
-                    index++;
+                    row.Add( instantiateBox( decideBoxType(i, j), i, j) );
                 }
+
+                grid.Add(row);
             }
 
             StartCoroutine(calculateProperGridSize(x, y));
             StartCoroutine(gridAlignmentProperlyOnScreen());
         }
 
-        private void instantiateBox(GameObject type, int number)
+        private GameObject decideBoxType(int i, int j)
+        {
+            GameObject boxType = null;
+
+            if (i == 0 && j == 0)
+            {
+                boxType = GUIManager.Instance.emptyBox;
+            }
+
+            else if (i == 0 || j == 0)
+            {
+                boxType = GUIManager.Instance.numberBox;
+            }
+
+            else
+            {
+                if (Motor.Instance.puzzleGrid[index] == 0)
+                {
+                    boxType = GUIManager.Instance.letterBox;
+                }
+
+                else
+                {
+                    boxType = GUIManager.Instance.blackBox;
+                }
+
+                index++;
+            }
+
+            return boxType;
+        }
+
+        private GameObject instantiateBox(GameObject type, int i, int j)
         {
             GameObject aBox = null;
 
@@ -71,12 +93,12 @@ namespace Maca
             aBox.transform.SetParent(GUIManager.Instance.gameBoard.transform);
             aBox.transform.localScale = new Vector3(1.0f, 1.0f);
 
-            if (number != -1)
+            if ( (i == 0 && j != 0) || (i != 0 && j == 0) )
             {
-                aBox.GetComponentInChildren<Text>().text = (number).ToString();
+                aBox.GetComponentInChildren<Text>().text = (System.Math.Max(i, j)).ToString();
             }
 
-            GUIManager.Instance.boxes.Add(aBox);
+            return aBox;
         }
 
         private IEnumerator calculateProperGridSize(int x, int y)
@@ -110,6 +132,29 @@ namespace Maca
             yield return new WaitForEndOfFrame();
 
             GUIManager.Instance.gameBoard.transform.position = GUIManager.Instance.reference.position;
+
+            GamePlay.Instance.setupGamePlay();
+        }
+
+        public void destroyGrid()
+        {
+            if( grid != null)
+            {
+                for (int i = 0; i < x + 1; i++)
+                {
+                    for (int j = 0; j < y + 1; j++)
+                    {
+                        Destroy(grid[i][j]);
+                    }
+                }
+
+                for(int i = 0; i < x + 1; i++)
+                {
+                    grid[i].Clear();
+                }
+
+                grid.Clear();
+            }
         }
     }
 }

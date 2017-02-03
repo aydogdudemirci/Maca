@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Maca
 {
@@ -30,8 +29,6 @@ namespace Maca
 
         public Transform reference;
 
-        public List<GameObject> boxes = new List<GameObject>();
-
         private void Awake()
         {
             instance = this;
@@ -52,10 +49,7 @@ namespace Maca
             gameModeSettingsScreen.SetActive(true);
             gameIsOnScreen.SetActive(false);
 
-            if(boxes != null)
-            {
-                destroyPuzzle();
-            }
+            GridCreator.Instance.destroyGrid();
         }
 
         public void goGameIsOnScreen()
@@ -66,17 +60,7 @@ namespace Maca
             gameIsOnScreen.SetActive(true);
 
             Motor.Instance.createPuzzle();
-            GameExecutive.Instance.createGrid();
-        }
-
-        private void destroyPuzzle()
-        {
-            for (int i = 0; i < boxes.Count; i++)
-            {
-                Destroy(boxes[i]);
-            }
-
-            boxes.Clear();
+            GridCreator.Instance.createGrid();
         }
     }
 }
