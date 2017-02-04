@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Maca
 {
@@ -18,10 +19,11 @@ namespace Maca
 
         public void createPuzzle()
         {
-            if (GUIManager.Instance.isPseudo)
+            if (GUIManager.Instance.isPseudo && puzzleGrid.Length == 0)
             {
                 pseudoPuzzle();
             }
+
             else
             {
                 //automatic puzzle creation process will starts from here

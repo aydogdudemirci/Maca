@@ -16,7 +16,7 @@ namespace Maca
 
         void Update()
         {
-            if (Input.anyKeyDown)
+            if (GUIManager.Instance.gameIsOnScreen.activeSelf &&  Input.anyKeyDown)
             {
                 if (Input.GetKeyDown(KeyCode.DownArrow))
                 {

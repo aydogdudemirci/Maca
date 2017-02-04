@@ -59,12 +59,12 @@ namespace Maca
 
         public void goGameModeSettingScreen()
         {
+            GridCreator.Instance.destroyGrid();
+
             introScreen.SetActive(false);
             mainSelectionsScreen.SetActive(false);
             gameModeSettingsScreen.SetActive(true);
             gameIsOnScreen.SetActive(false);
-
-            GridCreator.Instance.destroyGrid();
         }
 
         public void goGameIsOnScreen()
@@ -73,7 +73,7 @@ namespace Maca
             mainSelectionsScreen.SetActive(false);
             gameModeSettingsScreen.SetActive(false);
             gameIsOnScreen.SetActive(true);
-
+            
             Motor.Instance.createPuzzle();
             GridCreator.Instance.createGrid();
         }

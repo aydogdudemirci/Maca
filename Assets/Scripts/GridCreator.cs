@@ -12,19 +12,18 @@ namespace Maca
 
         private XYCouple size;
         private int index;
+        private bool isThereGrid;
 
         private void Awake()
         {
             instance = this;
-        }
-
-        private void Start()
-        {
-            index = 0;
+            isThereGrid = false;
         }
 
         public void createGrid()
         {
+            index = 0;
+
             if (GUIManager.Instance.isPseudo)
             {
                 size = new XYCouple(GUIManager.Instance.X, GUIManager.Instance.Y);
@@ -41,9 +40,9 @@ namespace Maca
             {
                 row = new List<GameObject>();
 
-                for (int j = 0; j< size.x + 1; j++)
+                for (int j = 0; j < size.x + 1; j++)
                 {
-                    row.Add( instantiateBox( decideBoxType(i, j), i, j) );
+                    row.Add(instantiateBox(decideBoxType(i, j), i, j));
                 }
 
                 grid.Add(row);
@@ -51,6 +50,8 @@ namespace Maca
 
             StartCoroutine(calculateProperGridSize(size.x, size.y));
             StartCoroutine(gridAlignmentProperlyOnScreen());
+
+            isThereGrid = true;
         }
 
         private GameObject decideBoxType(int i, int j)
@@ -93,7 +94,7 @@ namespace Maca
             aBox.transform.SetParent(GUIManager.Instance.gameBoard.transform);
             aBox.transform.localScale = new Vector3(1.0f, 1.0f);
 
-            if ( (i == 0 && j != 0) || (i != 0 && j == 0) )
+            if ((i == 0 && j != 0) || (i != 0 && j == 0))
             {
                 aBox.GetComponentInChildren<Text>().text = (System.Math.Max(i, j)).ToString();
             }
@@ -138,22 +139,24 @@ namespace Maca
 
         public void destroyGrid()
         {
-            if( grid != null)
+            if (isThereGrid)
             {
-                for (int i = 0; i < size.x + 1; i++)
+                for (int i = 0; i < grid.Count; i++)
                 {
-                    for (int j = 0; j < size.y + 1; j++)
+                    for (int j = 0; j < grid[i].Count; j++)
                     {
                         Destroy(grid[i][j]);
                     }
                 }
 
-                for(int i = 0; i < size.x + 1; i++)
+                for (int i = 0; i < grid.Count; i++)
                 {
                     grid[i].Clear();
                 }
 
                 grid.Clear();
+
+                isThereGrid = false;
             }
         }
     }
