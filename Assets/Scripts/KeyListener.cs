@@ -16,7 +16,7 @@ namespace Maca
 
         void Update()
         {
-            if (GUIManager.Instance.gameIsOnScreen.activeSelf &&  Input.anyKeyDown)
+            if (Input.anyKeyDown && GridCreator.Instance.isThereGrid)
             {
                 if (Input.GetKeyDown(KeyCode.DownArrow))
                 {
@@ -40,7 +40,7 @@ namespace Maca
 
                 else if (Input.GetKeyDown(KeyCode.Backspace))
                 {
-                    
+                    GamePlay.Instance.delete();   
                 }
 
                 else if (Input.GetKeyDown(KeyCode.Return))
@@ -50,7 +50,7 @@ namespace Maca
 
                 else if (Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.LeftShift))
                 {
-                    
+                    GamePlay.Instance.changeDirection();
                 }
 
                 else if (System.Text.RegularExpressions.Regex.IsMatch(Input.inputString, @"^[\p{L}]+$"))
@@ -71,11 +71,13 @@ namespace Maca
                 else if(System.Text.RegularExpressions.Regex.IsMatch(Input.inputString, @"^[\p{N}]+$"))
                 {
                     key = Input.inputString;
+                }
 
-                   
-                    Debug.Log(key);
+                else
+                {
+                    //GamePlay.Instance.invalidInput();
                 }
             }
-        }
+        }  
     }
 }

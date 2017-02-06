@@ -33,6 +33,7 @@ namespace Maca
         public GameObject gamePanel;
         public GameObject gameBoard;
         public GameObject gameModes;
+        public GameObject question;
 
         public Color selectedLed;
         public Color selectedLedShadow;
@@ -41,6 +42,7 @@ namespace Maca
 
         public Color highlightLight;
         public Color highlightDark;
+        //public Color highlightRed;
 
         public Transform reference;
 

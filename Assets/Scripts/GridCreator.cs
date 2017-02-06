@@ -9,10 +9,14 @@ namespace Maca
     {
         public List<List<GameObject>> grid;
         public List<GameObject> row;
+        
+        public Vector2 cellSize;
+        public Vector2 spacing;
+        public XYCouple size;
 
-        private XYCouple size;
-        private int index;
-        private bool isThereGrid;
+        public bool isThereGrid;
+        public int fontSize;
+        public int index;
 
         private void Awake()
         {
@@ -24,7 +28,7 @@ namespace Maca
         {
             index = 0;
 
-            if (GUIManager.Instance.isPseudo)
+            if (GUIManager.Instance.isPseudo) 
             {
                 size = new XYCouple(GUIManager.Instance.X, GUIManager.Instance.Y);
             }
@@ -110,21 +114,23 @@ namespace Maca
 
             if (max < 11)
             {
-                GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().cellSize = new Vector2(80.0f, 80.0f);
-                GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().spacing = new Vector2(10.0f, 10.0f);
-                GUIManager.Instance.numberBox.GetComponentInChildren<Text>().fontSize = 60;
+                fontSize = 60;
+                cellSize = new Vector2(80.0f, 80.0f);
+                spacing = new Vector2(10.0f, 10.0f);
             }
 
             else
             {
-                GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().cellSize = new Vector2(830.0f / max, 830.0f / max);
-
-                float cellSize = GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().cellSize.x;
-
-                GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().spacing = new Vector2(10 - (80 / cellSize), 10 - (80 / cellSize));
-                GUIManager.Instance.numberBox.GetComponentInChildren<Text>().fontSize = 60 - (max - 10) * 5 / 2;
+                fontSize = 60 - (max - 10) * 5 / 2;
+                cellSize = new Vector2(830.0f / max, 830.0f / max);
+                spacing = new Vector2(10 - (80 / cellSize.x), 10 - (80 / cellSize.y));
             }
 
+            GUIManager.Instance.numberBox.GetComponentInChildren<Text>().fontSize = fontSize;
+            GUIManager.Instance.letterBox.GetComponentInChildren<Text>().fontSize = fontSize;
+
+            GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().cellSize = cellSize;
+            GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().spacing = spacing;
             GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().constraintCount = x + 1;
         }
 
