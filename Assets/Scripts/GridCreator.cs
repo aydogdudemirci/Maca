@@ -30,7 +30,7 @@ namespace Maca
 
             if (GUIManager.Instance.isPseudo) 
             {
-                size = new XYCouple(GUIManager.Instance.X, GUIManager.Instance.Y);
+                size = new XYCouple((int)ButtonManager.Instance.sliders[2].value * 2, (int)ButtonManager.Instance.sliders[3].value * 2);
             }
 
             else
@@ -54,7 +54,6 @@ namespace Maca
 
             StartCoroutine(calculateProperGridSize(size.x, size.y));
             StartCoroutine(gridAlignmentProperlyOnScreen());
-
             isThereGrid = true;
         }
 
@@ -74,16 +73,7 @@ namespace Maca
 
             else
             {
-                if (Motor.Instance.puzzleGrid[index] == 0)
-                {
-                    boxType = GUIManager.Instance.letterBox;
-                }
-
-                else
-                {
-                    boxType = GUIManager.Instance.blackBox;
-                }
-
+                boxType = Motor.Instance.getBoxType(index);
                 index++;
             }
 
@@ -126,8 +116,16 @@ namespace Maca
                 spacing = new Vector2(10 - (80 / cellSize.x), 10 - (80 / cellSize.y));
             }
 
-            GUIManager.Instance.numberBox.GetComponentInChildren<Text>().fontSize = fontSize;
-            GUIManager.Instance.letterBox.GetComponentInChildren<Text>().fontSize = fontSize;
+            foreach (List<GameObject> myrow in grid)
+            {
+                foreach (GameObject mybox in myrow)
+                {
+                    if (mybox.tag.Equals("LetterBox") || mybox.tag.Equals("NumberBox"))
+                    {
+                        mybox.GetComponentInChildren<Text>().fontSize = fontSize;
+                    }
+                }
+            }
 
             GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().cellSize = cellSize;
             GUIManager.Instance.gameBoard.GetComponent<GridLayoutGroup>().spacing = spacing;
@@ -164,6 +162,8 @@ namespace Maca
 
                 isThereGrid = false;
             }
+
+            index = 0;
         }
     }
 }

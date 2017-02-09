@@ -17,6 +17,7 @@ namespace Maca
         XYCouple size;
 
         public bool isFromLeftToRight;
+        private GameObject images;
 
         int x;
         int y;
@@ -43,7 +44,7 @@ namespace Maca
 
             if (GUIManager.Instance.isPseudo)
             {
-                size = new XYCouple(GUIManager.Instance.X, GUIManager.Instance.Y);
+                size = new XYCouple((int)ButtonManager.Instance.sliders[2].value * 2, (int)ButtonManager.Instance.sliders[3].value * 2);
             }
 
             else
@@ -221,12 +222,44 @@ namespace Maca
         {
             if (isFromLeftToRight)
             {
-                x += 1;
+                if(grid[y][x + 1].GetComponentInChildren<Text>().text.Equals(""))
+                {
+                    x += 1;
+                }
+
+                else
+                {
+                    while(size.x > x && !grid[y][x + 1].tag.Equals("BlackBox") && !grid[y][x].GetComponentInChildren<Text>().text.Equals(""))
+                    {
+                        x += 1;
+                    }
+                }
+
+                if (x == size.x || grid[y][x + 1].tag.Equals("BlackBox"))
+                {
+                    changeDirection();
+                }
             }
 
             else
             {
-                y += 1;
+                if (grid[y + 1][x].GetComponentInChildren<Text>().text.Equals(""))
+                {
+                    y += 1;
+                }
+
+                else
+                {
+                    while (size.y > y && !grid[y + 1][x].tag.Equals("BlackBox") && !grid[y][x].GetComponentInChildren<Text>().text.Equals(""))
+                    {
+                        y += 1;
+                    }
+                }
+
+                if (y == size.y || grid[y + 1][x].tag.Equals("BlackBox"))
+                {
+                    changeDirection();
+                }
             }
         }
 
@@ -278,35 +311,41 @@ namespace Maca
 
         private void removeQuestion()
         {
-            if(grid[y][x].tag.Equals("Letterbox"))
+            if (grid[y][x].tag.Equals("LetterBox"))
             {
                 GUIManager.Instance.question.GetComponent<Text>().text = "";
+            }
+
+            if (Motor.Instance.getImageNumber(x, y, isFromLeftToRight) != 0)
+            {
+                Destroy(images);
             }
         }
 
         private void updateQuestion()
         {
-            if(isFromLeftToRight && grid[y][x].tag.Equals("LetterBox"))
+            if (grid[y][x].tag.Equals("LetterBox"))
             {
-                GUIManager.Instance.question.GetComponent<Text>().text =
-                    Motor.Instance.questions[Motor.Instance.questionsTroughRight[(y-1)*size.x + x - 1]+1];
+                GUIManager.Instance.question.GetComponent<Text>().text = Motor.Instance.getQuestion(x, y, isFromLeftToRight);
             }
 
-            else if ( !isFromLeftToRight && grid[y][x].tag.Equals("LetterBox"))
+            if (Motor.Instance.getImageNumber(x, y, isFromLeftToRight) != 0)
             {
-                GUIManager.Instance.question.GetComponent<Text>().text =
-                    Motor.Instance.questions[Motor.Instance.questionsTroughDown[(y - 1) * size.x + x - 1]+1];
-            }
+                images = null;
 
-            else
-            {
-                GUIManager.Instance.question.GetComponent<Text>().text = Motor.Instance.questions[0];
+                images = Instantiate(GUIManager.Instance.images, Vector2.zero, Quaternion.identity) as GameObject;
+                images.transform.SetParent(GUIManager.Instance.gamePanel.transform);
+                images.transform.localScale = new Vector3(1.0f, 1.0f);
+                images.transform.localPosition = new Vector3(0.0f, 0.0f);
+
+                images.SetActive(true);
+                images.transform.GetChild(Motor.Instance.getImageNumber(x, y, isFromLeftToRight) - 1).gameObject.SetActive(true);
             }
         }
 
         private void FixedUpdate()
         {
-            if(x > 0 && y > 0)
+            if(GridCreator.Instance.isThereGrid && x > 0 && y > 0)
             {
                 if (isFromLeftToRight)
                 {

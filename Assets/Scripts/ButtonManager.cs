@@ -6,8 +6,11 @@ namespace Maca
 {
     public class ButtonManager : Singleton<ButtonManager>
     {
-        private List<GameObject> typeOfSetting = new List<GameObject>();
-        private List<int> selectedMode = new List<int>();
+        public List<Slider> sliders;
+        public List<GameObject> infos;
+
+        public Color highlighted;
+        public Color disabled;
 
         private void Awake()
         {
@@ -16,73 +19,113 @@ namespace Maca
 
         private void Start()
         {
-            foreach (Transform child in GUIManager.Instance.gameModes.transform)
-            {
-                typeOfSetting.Add(child.gameObject);
-            }
-
-            for (int i = 0; i < typeOfSetting.Count; i++)
-            {
-                if(GUIManager.Instance.isPseudo)
-                {
-                    selectedMode.Add(0);
-                }
-
-                else
-                {
-                    // selectedMode.Add(DataManager.Instance.getPlayerPrefs(i));
-                }
-            }
-
-            foreach (GameObject value in typeOfSetting)
-            {
-                foreach (Transform child in value.transform)
-                {
-                    if (selectedMode[child.parent.GetSiblingIndex()] == child.GetSiblingIndex())
-                    {
-                        child.GetChild(0).GetComponent<Image>().color = GUIManager.Instance.selectedLed;
-                        child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.selectedLedShadow;
-                    }
-
-                    else
-                    {
-                        child.GetChild(0).GetComponent<Image>().color = GUIManager.Instance.notSelectedLed;
-                        child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.notSelectedLedShadow;
-                    }
-                }
-            }
+            highlight();
         }
 
-        public void changeColor(Button button)
+        public void colored()
         {
-            selectedMode[button.transform.parent.GetSiblingIndex()] = button.transform.GetSiblingIndex();
-
-            foreach (Transform child in button.transform.parent)
+            foreach (GameObject info in infos)
             {
-                if (selectedMode[child.parent.GetSiblingIndex()] == child.GetSiblingIndex())
+                foreach (Transform inf in info.transform)
                 {
-                    child.GetChild(0).gameObject.GetComponent<Image>().color = GUIManager.Instance.selectedLed;
-                    child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.selectedLedShadow;
-                }
-
-                else
-                {
-                    child.GetChild(0).gameObject.GetComponent<Image>().color = GUIManager.Instance.notSelectedLed;
-                    child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.notSelectedLedShadow;
+                    inf.GetComponent<Text>().color = disabled;
                 }
             }
+
+            highlight();
         }
 
-        public void savePreferences()
+        private void highlight()
         {
-            //save preferences via DataManager.cs
-        }
-
-        public string getSetting(string request)
-        {
-            GameObject settingType = GameObject.Find(request);
-
-            return settingType.transform.GetChild(selectedMode[settingType.transform.GetSiblingIndex()]).name;
+            infos[0].transform.GetChild((int)sliders[0].value - 1).GetComponent<Text>().color = highlighted;
+            infos[1].transform.GetChild((int)sliders[1].value - 1).GetComponent<Text>().color = highlighted;
+            infos[2].transform.GetChild((int)sliders[2].value - 1).GetComponent<Text>().color = highlighted;
+            infos[2].transform.GetChild((int)sliders[3].value - 1).GetComponent<Text>().color = highlighted;
         }
     }
 }
+
+
+
+
+//    public class ButtonManager : Singleton<ButtonManager>
+//    {
+//        private List<GameObject> typeOfSetting = new List<GameObject>();
+//        private List<int> selectedMode = new List<int>();
+
+//        private void Awake()
+//        {
+//            instance = this;
+//        }
+
+//        private void Start()
+//        {
+//            foreach (Transform child in GUIManager.Instance.gameModes.transform)
+//            {
+//                typeOfSetting.Add(child.gameObject);
+//            }
+
+//            for (int i = 0; i < typeOfSetting.Count; i++)
+//            {
+//                if(GUIManager.Instance.isPseudo)
+//                {
+//                    selectedMode.Add(0);
+//                }
+
+//                else
+//                {
+//                    // selectedMode.Add(DataManager.Instance.getPlayerPrefs(i));
+//                }
+//            }
+
+//            foreach (GameObject value in typeOfSetting)
+//            {
+//                foreach (Transform child in value.transform)
+//                {
+//                    if (selectedMode[child.parent.GetSiblingIndex()] == child.GetSiblingIndex())
+//                    {
+//                        child.GetChild(0).GetComponent<Image>().color = GUIManager.Instance.selectedLed;
+//                        child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.selectedLedShadow;
+//                    }
+
+//                    else
+//                    {
+//                        child.GetChild(0).GetComponent<Image>().color = GUIManager.Instance.notSelectedLed;
+//                        child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.notSelectedLedShadow;
+//                    }
+//                }
+//            }
+//        }
+
+//        public void changeColor(Button button)
+//        {
+//            selectedMode[button.transform.parent.GetSiblingIndex()] = button.transform.GetSiblingIndex();
+
+//            foreach (Transform child in button.transform.parent)
+//            {
+//                if (selectedMode[child.parent.GetSiblingIndex()] == child.GetSiblingIndex())
+//                {
+//                    child.GetChild(0).gameObject.GetComponent<Image>().color = GUIManager.Instance.selectedLed;
+//                    child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.selectedLedShadow;
+//                }
+
+//                else
+//                {
+//                    child.GetChild(0).gameObject.GetComponent<Image>().color = GUIManager.Instance.notSelectedLed;
+//                    child.GetChild(0).gameObject.GetComponent<Shadow>().effectColor = GUIManager.Instance.notSelectedLedShadow;
+//                }
+//            }
+//        }
+
+//        public void savePreferences()
+//        {
+//            //save preferences via DataManager.cs
+//        }
+
+//        public string getSetting(string request)
+//        {
+//            GameObject settingType = GameObject.Find(request);
+
+//            return settingType.transform.GetChild(selectedMode[settingType.transform.GetSiblingIndex()]).name;
+//        }
+//    }

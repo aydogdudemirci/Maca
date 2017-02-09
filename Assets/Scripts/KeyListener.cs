@@ -73,10 +73,10 @@ namespace Maca
                     key = Input.inputString;
                 }
 
-                else
-                {
-                    //GamePlay.Instance.invalidInput();
-                }
+                //else
+                //{
+                //    GamePlay.Instance.invalidInput();
+                //}
             }
         }  
     }

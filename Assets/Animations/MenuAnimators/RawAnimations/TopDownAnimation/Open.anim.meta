@@ -1,7 +1,9 @@
 fileFormatVersion: 2
-guid: 022db6812ee09b74bb088d70e9452a2a
-timeCreated: 1485540505
-licenseType: Free
+guid: cc85fdf1374e24a4391ce396e7fae94a
+labels:
+- curves
+timeCreated: 1426121504
+licenseType: Store
 NativeFormatImporter:
   userData: 
   assetBundleName: 

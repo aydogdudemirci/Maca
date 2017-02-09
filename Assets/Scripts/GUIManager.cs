@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace Maca
 {
@@ -20,8 +22,8 @@ namespace Maca
         public bool isPseudo;
         public int X, Y;
 
+        public GameObject loadScreen;
         public GameObject introScreen;
-        public GameObject mainSelectionsScreen;
         public GameObject gameModeSettingsScreen;
         public GameObject gameIsOnScreen;
 
@@ -32,8 +34,8 @@ namespace Maca
 
         public GameObject gamePanel;
         public GameObject gameBoard;
-        public GameObject gameModes;
         public GameObject question;
+        public GameObject images;
 
         public Color selectedLed;
         public Color selectedLedShadow;
@@ -46,38 +48,65 @@ namespace Maca
 
         public Transform reference;
 
+        public GameObject loadSquare;
+
         private void Awake()
         {
             instance = this;
+            StartCoroutine(makeLoadScreen(introScreen));
         }
 
-        public void goMainSelectionScreen()
+        public void goIntroScreen(GameObject target)
         {
-            introScreen.SetActive(false);
-            mainSelectionsScreen.SetActive(true);
-            gameModeSettingsScreen.SetActive(false);
-            gameIsOnScreen.SetActive(false);
+            makeAllScenesDisable();
+            Animate(target);
         }
 
-        public void goGameModeSettingScreen()
+        public void goGameModeSettingScreen(GameObject target)
         {
             GridCreator.Instance.destroyGrid();
-
-            introScreen.SetActive(false);
-            mainSelectionsScreen.SetActive(false);
-            gameModeSettingsScreen.SetActive(true);
-            gameIsOnScreen.SetActive(false);
+            makeAllScenesDisable();
+            Animate(target);
         }
 
-        public void goGameIsOnScreen()
+        public void goGameIsOnScreen(GameObject target)
         {
-            introScreen.SetActive(false);
-            mainSelectionsScreen.SetActive(false);
-            gameModeSettingsScreen.SetActive(false);
-            gameIsOnScreen.SetActive(true);
-            
+            makeAllScenesDisable();
             Motor.Instance.createPuzzle();
             GridCreator.Instance.createGrid();
+            StartCoroutine(makeLoadScreen(target));
+        }
+
+        private void makeAllScenesDisable()
+        {
+            introScreen.SetActive(false);
+            gameModeSettingsScreen.SetActive(false);
+            gameIsOnScreen.SetActive(false);
+            loadScreen.SetActive(false);
+        }
+
+        private void Animate(GameObject target)
+        {
+            target.SetActive(true);
+            target.GetComponent<Animator>().SetBool("SlideOut", true);
+        }
+
+        IEnumerator makeLoadScreen(GameObject target)
+        {
+            yield return new WaitForEndOfFrame();
+            Animate(loadScreen);
+
+            loadSquare.GetComponent<Image>().fillAmount = 0.1f;
+
+            while (loadSquare.GetComponent<Image>().fillAmount < 1)
+            {
+                loadSquare.GetComponent<Image>().fillAmount += 0.0075f;
+
+                yield return new WaitForEndOfFrame();
+            }
+
+            makeAllScenesDisable();
+            Animate(target);
         }
     }
 }
