@@ -1,5 +1,9 @@
 ﻿using System.Collections.Generic;
+using Mono.Data.Sqlite;
 using UnityEngine;
+using System.Data;
+using System;
+
 
 namespace Maca
 {
@@ -15,6 +19,35 @@ namespace Maca
         void Awake()
         {
             instance = this;
+        }
+
+        void Start()
+        {
+            string conn = "URI=file:" + Application.dataPath + "/Database/words.db";
+            IDbConnection dbconn;
+            dbconn = (IDbConnection)new SqliteConnection(conn);
+            dbconn.Open();
+
+            IDbCommand dbcmd = dbconn.CreateCommand();
+            string sqlQuery = "SELECT ID, WORD, TYPE " + "FROM words";
+            dbcmd.CommandText = sqlQuery;
+            IDataReader reader = dbcmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                int ID = reader.GetInt32(0);
+                string WORD = reader.GetString(1);
+                string TYPE = reader.GetString(2);
+
+                Debug.Log("value= " + ID + "  name =" + WORD + "  TYPE =" + TYPE);
+            }
+
+            reader.Close();
+            reader = null;
+            dbcmd.Dispose();
+            dbcmd = null;
+            dbconn.Close();
+            dbconn = null;
         }
 
         public void createPuzzle()
