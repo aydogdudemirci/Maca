@@ -33,14 +33,14 @@ namespace Maca
             dbcmd.CommandText = sqlQuery;
             IDataReader reader = dbcmd.ExecuteReader();
 
-            while (reader.Read())
-            {
-                int ID = reader.GetInt32(0);
-                string WORD = reader.GetString(1);
-                string TYPE = reader.GetString(2);
+            //while (reader.Read())
+            //{
+            //    int ID = reader.GetInt32(0);
+            //    string WORD = reader.GetString(1);
+            //    string TYPE = reader.GetString(2);
 
-                Debug.Log("value= " + ID + "  name =" + WORD + "  TYPE =" + TYPE);
-            }
+            //    Debug.Log("value= " + ID + "  name =" + WORD + "  TYPE =" + TYPE);
+            //}
 
             reader.Close();
             reader = null;
