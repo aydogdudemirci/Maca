@@ -9,16 +9,16 @@ namespace Maca
     {
         Color highlightLight;
         Color highlightDark;
-        //Color highlightRed;
 
         Color letterBox;
         Color blackBox;
 
-        XYCouple size;
+        XYCouple size, old;
 
         public bool isFromLeftToRight;
         private GameObject images;
 
+        int previousQuestion;
         int x;
         int y;
 
@@ -42,29 +42,28 @@ namespace Maca
 
             isFromLeftToRight = true;
 
-            if (GUIManager.Instance.isPseudo)
-            {
-                size = new XYCouple((int)ButtonManager.Instance.sliders[2].value * 2, (int)ButtonManager.Instance.sliders[3].value * 2);
-            }
-
-            else
-            {
-                //get size from settings
-            }
+            size = new XYCouple((int)ButtonManager.Instance.sliders[2].value * 2, (int)ButtonManager.Instance.sliders[3].value * 2);
+            old = new XYCouple(1, 1, isFromLeftToRight);
 
             letterBox = GUIManager.Instance.letterBox.GetComponent<Image>().color;
             blackBox = GUIManager.Instance.blackBox.GetComponent<Image>().color;
 
             highlightLight = GUIManager.Instance.highlightLight;
             highlightDark = GUIManager.Instance.highlightDark;
-            //highlightRed = GUIManager.Instance.highlightRed;
+
+            images = null;
+
+            images = Instantiate(GUIManager.Instance.images, Vector2.zero, Quaternion.identity) as GameObject;
+            images.transform.SetParent(GUIManager.Instance.gamePanel.transform);
+            images.transform.localScale = new Vector3(1.0f, 1.0f);
+            images.transform.localPosition = new Vector3(0.0f, -50.0f);
 
             highlightBox();
         }
 
         public void go(string keyword)
         {
-            removeHighlightBox();
+            old = new XYCouple(x, y, isFromLeftToRight);
 
             if (keyword.Equals("DOWN"))
             {
@@ -103,7 +102,7 @@ namespace Maca
 
         public void write(string keyword)
         {
-            removeHighlightBox();
+            old = new XYCouple(x, y, isFromLeftToRight);
 
             if (grid[y][x].tag.Equals("LetterBox"))
             {
@@ -154,7 +153,27 @@ namespace Maca
 
         public void highlightBox()
         {
-            updateQuestion();
+            foreach (List<GameObject> value in grid)
+            {
+                foreach (GameObject box in value)
+                {
+                    if (box.tag.Equals("LetterBox"))
+                    {
+                        box.GetComponent<Image>().color = letterBox;
+
+                        box.transform.GetChild(0).gameObject.SetActive(false);
+                        box.transform.GetChild(1).gameObject.SetActive(false);
+                    }
+
+                    else if (box.tag.Equals("BlackBox"))
+                    {
+                        box.GetComponent<Image>().color = blackBox;
+
+                        box.transform.GetChild(0).gameObject.SetActive(false);
+                        box.transform.GetChild(1).gameObject.SetActive(false);
+                    }
+                }
+            }
 
             if (grid[y][x].tag.Equals("LetterBox"))
             {
@@ -177,24 +196,40 @@ namespace Maca
                 grid[y][x].transform.GetChild(0).gameObject.SetActive(false);
                 grid[y][x].transform.GetChild(1).gameObject.SetActive(true);
             }
-        }
-
-        public void removeHighlightBox()
-        {
-            removeQuestion();
 
             if (grid[y][x].tag.Equals("LetterBox"))
             {
-                grid[y][x].GetComponent<Image>().color = letterBox;
+                GUIManager.Instance.question.GetComponent<Text>().text = Motor.Instance.getQuestion(x, y, isFromLeftToRight);
+            }
+
+            if (Motor.Instance.getImageNumber(x, y, isFromLeftToRight) == 0)
+            {
+                imageDeactive();
+                images.SetActive(false);
             }
 
             else
             {
-                grid[y][x].GetComponent<Image>().color = blackBox;
-            }
+                if (Motor.Instance.getImageNumber(old.x, old.y, old.direction) == 0)
+                {
+                    images.transform.GetChild(Motor.Instance.getImageNumber(x, y, isFromLeftToRight) - 1).gameObject.SetActive(true);
+                    animate();
+                }
 
-            grid[y][x].transform.GetChild(0).gameObject.SetActive(false);
-            grid[y][x].transform.GetChild(1).gameObject.SetActive(false);
+                else if (Motor.Instance.getImageNumber(x, y, isFromLeftToRight) != Motor.Instance.getImageNumber(old.x, old.y, old.direction))
+                {
+                    imageDeactive();
+                    images.SetActive(false);
+                    images.transform.GetChild(Motor.Instance.getImageNumber(x, y, isFromLeftToRight) - 1).gameObject.SetActive(true);
+                    animate();
+                }
+
+                else
+                {
+                    images.transform.GetChild(Motor.Instance.getImageNumber(x, y, isFromLeftToRight) - 1).gameObject.SetActive(true);
+                    animate();
+                }
+            }
         }
 
         public void concludeWord()
@@ -216,6 +251,8 @@ namespace Maca
                     changeDirection();
                 }
             }
+
+            highlightBox();
         }
 
         public void continueWord()
@@ -261,18 +298,20 @@ namespace Maca
                     changeDirection();
                 }
             }
+
+            highlightBox();
         }
 
         public void changeDirection()
         {
-            removeHighlightBox();
+            old = new XYCouple(x, y, isFromLeftToRight);
             isFromLeftToRight = !isFromLeftToRight;
             highlightBox();
         }
 
         public void delete()
         {
-            removeHighlightBox();
+            old = new XYCouple(x, y, isFromLeftToRight);
 
             if (isFromLeftToRight)
             {
@@ -308,38 +347,12 @@ namespace Maca
 
             highlightBox();
         }
-
-        private void removeQuestion()
+        
+        public void imageDeactive()
         {
-            if (grid[y][x].tag.Equals("LetterBox"))
+            for (int i = 0; i < 8; i++)
             {
-                GUIManager.Instance.question.GetComponent<Text>().text = "";
-            }
-
-            if (Motor.Instance.getImageNumber(x, y, isFromLeftToRight) != 0)
-            {
-                Destroy(images);
-            }
-        }
-
-        private void updateQuestion()
-        {
-            if (grid[y][x].tag.Equals("LetterBox"))
-            {
-                GUIManager.Instance.question.GetComponent<Text>().text = Motor.Instance.getQuestion(x, y, isFromLeftToRight);
-            }
-
-            if (Motor.Instance.getImageNumber(x, y, isFromLeftToRight) != 0)
-            {
-                images = null;
-
-                images = Instantiate(GUIManager.Instance.images, Vector2.zero, Quaternion.identity) as GameObject;
-                images.transform.SetParent(GUIManager.Instance.gamePanel.transform);
-                images.transform.localScale = new Vector3(1.0f, 1.0f);
-                images.transform.localPosition = new Vector3(0.0f, 0.0f);
-
-                images.SetActive(true);
-                images.transform.GetChild(Motor.Instance.getImageNumber(x, y, isFromLeftToRight) - 1).gameObject.SetActive(true);
+                images.transform.GetChild(i).gameObject.SetActive(false);
             }
         }
 
@@ -372,6 +385,16 @@ namespace Maca
                         grid[y][x].transform.GetChild(1).gameObject.SetActive(true);
                     }
                 }
+            }
+        }
+
+        private void animate()
+        {
+            images.SetActive(true);
+
+            if (GUIManager.Instance.gameIsOnScreen.activeSelf)
+            {
+                images.GetComponent<Animator>().SetBool("SlideOut", true);
             }
         }
     }

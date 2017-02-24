@@ -1,12 +1,29 @@
 ﻿using System.Collections.Generic;
-using Mono.Data.Sqlite;
 using UnityEngine;
-using System.Data;
-using System;
 
 
 namespace Maca
 {
+    public class XYCouple
+    {
+        public int x;
+        public int y;
+        public bool direction;
+
+        public XYCouple(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        public XYCouple(int x, int y, bool direction)
+        {
+            this.x = x;
+            this.y = y;
+            this.direction = direction;
+        }
+    }
+
     public class Motor : Singleton<Motor>
     {
         public int[] puzzleGrid;
@@ -23,31 +40,7 @@ namespace Maca
 
         void Start()
         {
-            string conn = "URI=file:" + Application.dataPath + "/Database/words.db";
-            IDbConnection dbconn;
-            dbconn = (IDbConnection)new SqliteConnection(conn);
-            dbconn.Open();
 
-            IDbCommand dbcmd = dbconn.CreateCommand();
-            string sqlQuery = "SELECT ID, WORD, TYPE " + "FROM words";
-            dbcmd.CommandText = sqlQuery;
-            IDataReader reader = dbcmd.ExecuteReader();
-
-            //while (reader.Read())
-            //{
-            //    int ID = reader.GetInt32(0);
-            //    string WORD = reader.GetString(1);
-            //    string TYPE = reader.GetString(2);
-
-            //    Debug.Log("value= " + ID + "  name =" + WORD + "  TYPE =" + TYPE);
-            //}
-
-            reader.Close();
-            reader = null;
-            dbcmd.Dispose();
-            dbcmd = null;
-            dbconn.Close();
-            dbconn = null;
         }
 
         public void createPuzzle()
@@ -60,6 +53,7 @@ namespace Maca
             else
             {
                 //automatic puzzle creation process will starts from here
+                //connect to server
             }
         }
 

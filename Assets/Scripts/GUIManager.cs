@@ -4,18 +4,6 @@ using UnityEngine.UI;
 
 namespace Maca
 {
-    public class XYCouple
-    {
-        public int x;
-        public int y;
-
-        public XYCouple(int x, int y)
-        {
-            this.x = x;
-            this.y = y;
-        }
-    }
-
     public class GUIManager : Singleton<GUIManager>
     {
         [SerializeField]
@@ -26,6 +14,7 @@ namespace Maca
         public GameObject introScreen;
         public GameObject gameModeSettingsScreen;
         public GameObject gameIsOnScreen;
+        public GameObject loadSquare;
 
         public GameObject letterBox;
         public GameObject numberBox;
@@ -41,14 +30,16 @@ namespace Maca
         public Color selectedLedShadow;
         public Color notSelectedLed;
         public Color notSelectedLedShadow;
-
         public Color highlightLight;
         public Color highlightDark;
-        //public Color highlightRed;
 
         public Transform reference;
 
-        public GameObject loadSquare;
+        public Text percentage;
+        public GameObject ibre;
+
+        public RuntimeAnimatorController disappear;
+        public RuntimeAnimatorController topDown;
 
         private void Awake()
         {
@@ -56,25 +47,19 @@ namespace Maca
             StartCoroutine(makeLoadScreen(introScreen));
         }
 
-        public void goIntroScreen(GameObject target)
+        public void goIntroScreen()
         {
-            makeAllScenesDisable();
-            Animate(target);
+            StartCoroutine(makeTransitionToIntroScreen());
         }
 
-        public void goGameModeSettingScreen(GameObject target)
+        public void goGameModeScreen(GameObject whereFrom)
         {
-            GridCreator.Instance.destroyGrid();
-            makeAllScenesDisable();
-            Animate(target);
+            StartCoroutine(makeTransitionToGameModeScreen(whereFrom));
         }
 
-        public void goGameIsOnScreen(GameObject target)
+        public void goGameScreen()
         {
-            makeAllScenesDisable();
-            Motor.Instance.createPuzzle();
-            GridCreator.Instance.createGrid();
-            StartCoroutine(makeLoadScreen(target));
+            StartCoroutine(makeTransitionToGameScreen());
         }
 
         private void makeAllScenesDisable()
@@ -85,8 +70,16 @@ namespace Maca
             loadScreen.SetActive(false);
         }
 
-        private void Animate(GameObject target)
+        private void animateTopdown(GameObject target)
         {
+            target.GetComponent<Animator>().runtimeAnimatorController = topDown;
+            target.SetActive(true);
+            target.GetComponent<Animator>().SetBool("SlideOut", true);
+        }
+
+        private void animateDisappear(GameObject target)
+        {
+            target.GetComponent<Animator>().runtimeAnimatorController = disappear;
             target.SetActive(true);
             target.GetComponent<Animator>().SetBool("SlideOut", true);
         }
@@ -94,19 +87,68 @@ namespace Maca
         IEnumerator makeLoadScreen(GameObject target)
         {
             yield return new WaitForEndOfFrame();
-            Animate(loadScreen);
+            float amount = 0.1f;
 
-            loadSquare.GetComponent<Image>().fillAmount = 0.1f;
+            animateTopdown(loadScreen);
 
-            while (loadSquare.GetComponent<Image>().fillAmount < 1)
+            loadSquare.GetComponent<Image>().fillAmount = amount;
+
+            while (amount < 1)
             {
-                loadSquare.GetComponent<Image>().fillAmount += 0.0075f;
+                amount += 0.0075f;
+                loadSquare.GetComponent<Image>().fillAmount = amount;
 
+                if((int)(amount * 100) % 10 == 0)
+                {
+                    percentage.text = ((int)(amount * 100)).ToString();
+                }
+                
                 yield return new WaitForEndOfFrame();
             }
 
+            animateDisappear(loadScreen);
+            yield return new WaitForSeconds(0.3f);
             makeAllScenesDisable();
-            Animate(target);
+            animateTopdown(target);
+            loadScreen.GetComponent<Transform>().localScale = new Vector3(1.0f, 1.0f, 1.0f);
+        }
+
+        private IEnumerator makeTransitionToIntroScreen()
+        {
+            animateDisappear(gameModeSettingsScreen);
+            yield return new WaitForSeconds(0.3f);
+            makeAllScenesDisable();
+            animateTopdown(introScreen);
+            gameModeSettingsScreen.GetComponent<Transform>().localScale = new Vector3(1.0f, 1.0f, 1.0f);
+        }
+
+        private IEnumerator makeTransitionToGameModeScreen(GameObject whereFrom)
+        {
+            animateDisappear(whereFrom);
+            yield return new WaitForSeconds(0.3f);
+            GridCreator.Instance.destroyGrid();
+            makeAllScenesDisable();
+            animateTopdown(gameModeSettingsScreen);
+            whereFrom.GetComponent<Transform>().localScale = new Vector3(1.0f, 1.0f, 1.0f);
+        }
+
+        private IEnumerator makeTransitionToGameScreen()
+        {
+            animateDisappear(gameModeSettingsScreen);
+            yield return new WaitForSeconds(0.3f);
+            makeAllScenesDisable();
+            StartCoroutine(makeLoadScreen(gameIsOnScreen));
+            Motor.Instance.createPuzzle();
+            GridCreator.Instance.createGrid();
+            gameModeSettingsScreen.GetComponent<Transform>().localScale = new Vector3(1.0f, 1.0f, 1.0f);
+        }
+
+        private void Update()
+        {
+            if (introScreen.activeSelf)
+            {
+                ibre.transform.Rotate(Vector3.back);
+            }
         }
     }
 }
