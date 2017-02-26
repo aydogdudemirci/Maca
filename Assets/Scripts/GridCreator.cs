@@ -163,6 +163,13 @@ namespace Maca
                 isThereGrid = false;
             }
 
+            Motor.Instance.puzzleGrid.Clear();
+            Motor.Instance.questionsTroughRight.Clear();
+            Motor.Instance.questionsTroughDown.Clear();
+            Motor.Instance.questions.Clear();
+            Motor.Instance.imageNumber.Clear();
+            Motor.Instance.answers.Clear();
+
             index = 0;
         }
     }
