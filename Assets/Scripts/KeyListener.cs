@@ -1,83 +1,75 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Maca
 {
     public class KeyListener : Singleton<KeyListener>
     {
-        enum direction { LEFTTORIGHT, UPTODOWN };
-
         public string key;
 
-        private void Awake()
+        private void Awake ()
         {
             instance = this;
         }
 
-        void Update()
+        void Update ()
         {
-            if (Input.anyKeyDown && GridCreator.Instance.isThereGrid)
+            if ( Input.anyKeyDown && Grid.Instance.isThereGrid && !GamePlay.Instance.checkEnd () )
             {
-                if (Input.GetKeyDown(KeyCode.DownArrow))
+                if ( Input.GetKeyDown ( KeyCode.DownArrow ) )
                 {
-                    GamePlay.Instance.go("DOWN");
+                    GamePlay.Instance.userInteract ( "DOWN" );
                 }
 
-                else if (Input.GetKeyDown(KeyCode.UpArrow))
+                else if ( Input.GetKeyDown ( KeyCode.UpArrow ) )
                 {
-                    GamePlay.Instance.go("UP");
+                    GamePlay.Instance.userInteract ( "UP" );
                 }
 
-                else if (Input.GetKeyDown(KeyCode.LeftArrow))
+                else if ( Input.GetKeyDown ( KeyCode.LeftArrow ) )
                 {
-                    GamePlay.Instance.go("LEFT");
+                    GamePlay.Instance.userInteract ( "LEFT" );
                 }
 
-                else if (Input.GetKeyDown(KeyCode.RightArrow))
+                else if ( Input.GetKeyDown ( KeyCode.RightArrow ) )
                 {
-                    GamePlay.Instance.go("RIGHT");
+                    GamePlay.Instance.userInteract ( "RIGHT" );
                 }
 
-                else if (Input.GetKeyDown(KeyCode.Backspace))
+                else if ( Input.GetKeyDown ( KeyCode.Backspace ) && ButtonManager.Instance.showHideButton.value == 0f && !GamePlay.Instance.isFinished )
                 {
-                    GamePlay.Instance.delete();   
+                    GamePlay.Instance.userInteract ( "BACKSPACE" );
                 }
 
-                else if (Input.GetKeyDown(KeyCode.Return))
+                //else if ( Input.GetKeyDown ( KeyCode.Return ) )
+                //{
+
+                //}
+
+                else if ( Input.GetKeyDown ( KeyCode.RightShift ) || Input.GetKeyDown ( KeyCode.LeftShift ) )
                 {
-                    
+                    GamePlay.Instance.userInteract ( "SHIFT" );
                 }
 
-                else if (Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.LeftShift))
+                else if ( System.Text.RegularExpressions.Regex.IsMatch ( Input.inputString, @"^[\p{L}]+$" ) && ButtonManager.Instance.showHideButton.value == 0f && !GamePlay.Instance.isFinished )
                 {
-                    GamePlay.Instance.changeDirection();
-                }
-
-                else if (System.Text.RegularExpressions.Regex.IsMatch(Input.inputString, @"^[\p{L}]+$"))
-                {
-                    if (Input.inputString == "i" || Input.inputString == "İ")
+                    if ( Input.inputString == "i" || Input.inputString == "İ" )
                     {
                         key = "İ";
                     }
 
                     else
                     {
-                        key = Input.inputString.ToUpper();
+                        key = Input.inputString.ToUpper ();
                     }
 
-                    GamePlay.Instance.write(key);
+                    GamePlay.Instance.userInteract ( key );
                 }
 
-                else if(System.Text.RegularExpressions.Regex.IsMatch(Input.inputString, @"^[\p{N}]+$"))
+                if( GamePlay.Instance.checkEnd ())
                 {
-                    key = Input.inputString;
+                    StartCoroutine ( GamePlay.Instance.makeEnd ());
                 }
-
-                //else
-                //{
-                //    GamePlay.Instance.invalidInput();
-                //}
             }
-        }  
+        }
     }
 }

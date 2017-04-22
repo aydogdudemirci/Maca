@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,395 +9,363 @@ namespace Maca
 {
     public class GamePlay : Singleton<GamePlay>
     {
-        Color highlightLight;
-        Color highlightDark;
+        public GameObject imagePanel;
+        public GameObject gamePanel;
+        public GameObject question;
+        public GameObject questionBoard;
+        public GameObject showHide;
 
-        Color letterBox;
-        Color blackBox;
+        public Color highLight;
+        public Color highDark;
+        public Color highGarden;
 
-        XYCouple size, old;
+        public Color start;
+        public Color end;
 
-        public bool isFromLeftToRight;
-        private GameObject images;
+        public Color letterBoxColor;
+        public Color blackBoxColor;
 
-        int previousQuestion;
-        int x;
-        int y;
+        public GameObject images;
 
-        List<List<GameObject>> grid
+        Point position;
+        public bool isFinished;
+
+        Stack<int> highlightedSlots;
+
+        Stopwatch gameTime;
+
+        List<GameObject> grid
         {
             get
             {
-                return GridCreator.Instance.grid;
+                return Grid.grid;
             }
         }
 
-        private void Awake()
+        Crossword c
+        {
+            get
+            {
+                return Generator.crossword;
+            }
+        }
+
+        private void Awake ()
         {
             instance = this;
         }
 
-        public void setupGamePlay()
+        public void createCrossword ()
         {
-            x = 1;
-            y = 1;
+            Grid.Instance.createGrid ();
 
-            isFromLeftToRight = true;
+            highlightedSlots = new Stack<int> ();
 
-            size = new XYCouple((int)ButtonManager.Instance.sliders[2].value * 2, (int)ButtonManager.Instance.sliders[3].value * 2);
-            old = new XYCouple(1, 1, isFromLeftToRight);
+            setPlayingStuff ();
+            activateFrame ();
+            addImageToFrame ();
+            animateFrame ();
+            removeHighlights ();
+            highlightPosition ();
+            fillBoxes ();
+            isFinished = false;
 
-            letterBox = GUIManager.Instance.letterBox.GetComponent<Image>().color;
-            blackBox = GUIManager.Instance.blackBox.GetComponent<Image>().color;
-
-            highlightLight = GUIManager.Instance.highlightLight;
-            highlightDark = GUIManager.Instance.highlightDark;
-
-            images = null;
-
-            images = Instantiate(GUIManager.Instance.images, Vector2.zero, Quaternion.identity) as GameObject;
-            images.transform.SetParent(GUIManager.Instance.gamePanel.transform);
-            images.transform.localScale = new Vector3(1.0f, 1.0f);
-            images.transform.localPosition = new Vector3(0.0f, -50.0f);
-
-            highlightBox();
+            gameTime = new Stopwatch ();
+            gameTime.Start ();
         }
 
-        public void go(string keyword)
+        private void fillBoxes ()
         {
-            old = new XYCouple(x, y, isFromLeftToRight);
+            int i=0;
 
-            if (keyword.Equals("DOWN"))
+            foreach(GameObject box in grid)
             {
-                if (y < size.y)
-                {
-                    y += 1;
-                }
+                box.GetComponentInChildren<Text>().text = c.filledSlots[i];
+                i++;
             }
-
-            else if(keyword.Equals("UP"))
-            {
-                if (y > 1)
-                {
-                    y -= 1;
-                }
-            }
-
-            else if (keyword.Equals("RIGHT"))
-            {
-                if (x < size.x)
-                {
-                    x += 1;
-                }
-            }
-
-            else if (keyword.Equals("LEFT"))
-            {
-                if (x > 1)
-                {
-                    x -= 1;
-                }
-            }
-
-            highlightBox();
         }
 
-        public void write(string keyword)
+        internal void delete ()
         {
-            old = new XYCouple(x, y, isFromLeftToRight);
+            removeHighlights ();
 
-            if (grid[y][x].tag.Equals("LetterBox"))
+            if (grid[position.index].GetComponentInChildren<Text>().text.Equals(" "))
             {
-                grid[y][x].GetComponentInChildren<Text>().text = keyword[0].ToString();
+                position = c.getPreviousSlot (position);
+            }
 
-                if (isFromLeftToRight)
+            else
+            {
+                grid[position.index].GetComponentInChildren<Text> ().text = " ";
+                c.filledSlots[position.index] = " ";
+            }
+
+            highlightPosition ();
+        }
+
+        private void removeHighlights ()
+        {
+            while ( highlightedSlots.Count > 0 )
+            {
+                if ( grid[highlightedSlots.Peek ()].tag.Equals ( "BlackBox" ) )
                 {
-                    if (x < size.x && grid[y][x + 1].tag.Equals("LetterBox"))
-                    {
-                        continueWord();
-                    }
-
-                    else
-                    {
-                        concludeWord();
-                    }
+                    grid[highlightedSlots.Pop ()].GetComponent<Image> ().color = blackBoxColor;
                 }
 
                 else
                 {
-                    if (y < size.y && grid[y + 1][x].tag.Equals("LetterBox"))
-                    {
-                        continueWord();
-                    }
-
-                    else
-                    {
-                        concludeWord();
-                    }
+                    grid[highlightedSlots.Pop ()].GetComponent<Image> ().color = letterBoxColor;
                 }
+            }
+        }
+
+        internal bool checkEnd ()
+        {
+            if(ButtonManager.Instance.showHideButton.value == 1.0f)
+            {
+                return false;
+            }
+
+            for(int i=0; i<c.x * c.y; i++)
+            {
+                if( c.grid[i].Equals(false) && !grid[i].GetComponentInChildren<Text>().text.Equals(c.answers[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public IEnumerator makeEnd()
+        {
+            foreach ( GameObject box in grid )
+            {
+                if(!box.tag.Equals("BlackBox"))
+                {
+                    box.GetComponent<Image> ().color = highLight;
+                }
+            }
+
+            isFinished = true;
+
+            yield return new WaitForSeconds ( 0.5f );
+
+            questionBoard.SetActive ( false );
+            showHide.SetActive ( false );
+            images.SetActive ( false );
+
+            while ( Grid.Instance.gameBoard.transform.position != Grid.Instance.reference2.position )
+            {
+                float step = 25 * Time.deltaTime;
+                Grid.Instance.gameBoard.transform.position = Vector3.MoveTowards ( Grid.Instance.gameBoard.transform.position, Grid.Instance.reference2.position, step );
+                yield return new WaitForEndOfFrame ();
+            }
+        }
+
+        public void setPlayingStuff ()
+        {
+            position = c.grid[c.polePosition + 1] ? new Point ( c.polePosition, false ) : new Point ( c.polePosition, true );
+
+            images = Instantiate ( imagePanel, Vector2.zero, Quaternion.identity ) as GameObject;
+            images.transform.SetParent ( gamePanel.transform );
+            images.transform.localScale = new Vector3 ( 1.0f, 1.0f );
+            images.transform.localPosition = new Vector3 ( 0.0f, -50.0f );
+
+            question.GetComponent<Text> ().text = c.questionsOfAcrossWords[0];
+        }
+
+        private void activateFrame ()
+        {
+            deactivateFrame ();
+
+            if ( !c.isBlackBox(position) )
+            {
+                images.SetActive ( true );
+
+                question.GetComponent<Text> ().text = c.getQuestion (position);
             }
 
             else
             {
-                if (isFromLeftToRight && x < size.x)
-                {
-                    x += 1;
-                }
-
-                else if(!isFromLeftToRight && y < size.y)
-                {
-                    y += 1;
-                }
+                images.SetActive ( false );
             }
-
-            highlightBox();
         }
 
-        public void highlightBox()
+        public void deactivateFrame ()
         {
-            foreach (List<GameObject> value in grid)
+            images.SetActive ( false );
+            question.GetComponent<Text> ().text = " ";
+        }
+
+        private void highlightPosition ()
+        {
+            if ( c.isBlackBox(position))
             {
-                foreach (GameObject box in value)
-                {
-                    if (box.tag.Equals("LetterBox"))
-                    {
-                        box.GetComponent<Image>().color = letterBox;
+                grid[position.index].GetComponent<Image> ().color = highDark;
+                highlightedSlots.Push ( position.index );
 
-                        box.transform.GetChild(0).gameObject.SetActive(false);
-                        box.transform.GetChild(1).gameObject.SetActive(false);
-                    }
-
-                    else if (box.tag.Equals("BlackBox"))
-                    {
-                        box.GetComponent<Image>().color = blackBox;
-
-                        box.transform.GetChild(0).gameObject.SetActive(false);
-                        box.transform.GetChild(1).gameObject.SetActive(false);
-                    }
-                }
-            }
-
-            if (grid[y][x].tag.Equals("LetterBox"))
-            {
-                grid[y][x].GetComponent<Image>().color = highlightLight;
+                question.GetComponent<Text> ().text = "% " + c.blackBoxPercentage.ToString ();
             }
 
             else
             {
-                grid[y][x].GetComponent<Image>().color = highlightDark;
+                foreach ( int slot in c.currentWord(position))
+                {
+                    grid[slot].GetComponent<Image> ().color = highLight;
+                    highlightedSlots.Push ( slot );
+                }
+            }
+        }
+
+        public void addImageToFrame ()
+        {
+            if ( images.activeSelf )
+            {
+                foreach ( Transform child in images.transform )
+                {
+                    if ( !child.name.Equals ( "Frame" ) )
+                    {
+                        child.gameObject.SetActive ( false );
+                    }
+                }
+
+                images.transform.FindChild ( c.getImageName(position) ).gameObject.SetActive ( true );
+            }
+        }
+
+        private void animateFrame ()
+        {
+            activateFrame ();
+
+            if ( GUIManager.Instance.gameIsOnScreen.activeSelf )
+            {
+                images.GetComponent<Animator> ().SetBool ( "SlideOut", true );
+            }
+        }
+
+        public void userInteract ( string command )
+        {
+            removeHighlights ();
+
+            Point previousPosition = new Point(position.index, position.isAcross);
+
+            if ( command.Equals ( "DOWN" ) )
+            {
+                if ( position.index < c.x * c.y - c.x )
+                {
+                    position.index += c.x;
+                }
             }
 
-            if(isFromLeftToRight)
+            else if ( command.Equals ( "UP" ) )
             {
-                grid[y][x].transform.GetChild(0).gameObject.SetActive(true);
-                grid[y][x].transform.GetChild(1).gameObject.SetActive(false);
+                if ( position.index > c.x - 1 )
+                {
+                    position.index -= c.x;
+                }
+            }
+
+            else if ( command.Equals ( "RIGHT" ) )
+            {
+                if ( position.index % c.x != c.x - 1 )
+                {
+                    position.index += 1;
+                }
+            }
+
+            else if ( command.Equals ( "LEFT" ) )
+            {
+                if ( position.index % c.x != 0 )
+                {
+                    position.index -= 1;
+                }
+            }
+
+            else if ( command.Equals ( "SHIFT" ) )
+            {
+                position.isAcross = !position.isAcross;
+            }
+
+            else if( command.Equals ( "BACKSPACE" ) )
+            {
+                delete ();
+            }
+
+            else if (command.Length == 1)
+            {
+                write (command);
+            }
+
+            decideImagesPanelAction ( previousPosition );
+
+            highlightPosition ();
+        }
+
+        private void decideImagesPanelAction ( Point previousPosition )
+        {
+            if ( c.isBlackBox ( position ) )
+            {
+                deactivateFrame ();
+            }
+
+            else if ( c.isThisOneLetterArea ( position ) )
+            {
+                deactivateFrame ();
+            }
+
+            else if( c.isPassedAnotherWord( previousPosition, position) )
+            {
+                deactivateFrame ();
+                activateFrame ();
+            }
+        }
+
+        public void write ( string input )
+        {
+            removeHighlights ();
+
+            if ( !c.isBlackBox(position) )
+            {
+                grid[position.index].GetComponentInChildren<Text> ().text = input[0].ToString ();
+                c.filledSlots[position.index] = input[0].ToString ();
+
+                position = c.getNextPretty ( position );
             }
 
             else
             {
-                grid[y][x].transform.GetChild(0).gameObject.SetActive(false);
-                grid[y][x].transform.GetChild(1).gameObject.SetActive(true);
+                deactivateFrame ();
             }
 
-            if (grid[y][x].tag.Equals("LetterBox"))
-            {
-                GUIManager.Instance.question.GetComponent<Text>().text = Motor.Instance.getQuestion(x, y, isFromLeftToRight);
-            }
+            highlightPosition ();
+        }
 
-            if (Motor.Instance.getImageNumber(x, y, isFromLeftToRight) == 0)
+        private void Update ()
+        {
+            if(Grid.Instance.isThereGrid )
             {
-                imageDeactive();
-                images.SetActive(false);
-            }
-
-            else
-            {
-                if (Motor.Instance.getImageNumber(old.x, old.y, old.direction) == 0)
+                if(!grid[position.index].tag.Equals ( "BlackBox" ))
                 {
-                    images.transform.GetChild(Motor.Instance.getImageNumber(x, y, isFromLeftToRight) - 1).gameObject.SetActive(true);
-                    animate();
+                    grid[position.index].GetComponent<Image> ().color = Color.Lerp ( start, end, Mathf.PingPong ( Time.time, 0.5f ) );
                 }
 
-                else if (Motor.Instance.getImageNumber(x, y, isFromLeftToRight) != Motor.Instance.getImageNumber(old.x, old.y, old.direction))
+                if ( gameTime.Elapsed.TotalSeconds > 5.0f )
                 {
-                    imageDeactive();
-                    images.SetActive(false);
-                    images.transform.GetChild(Motor.Instance.getImageNumber(x, y, isFromLeftToRight) - 1).gameObject.SetActive(true);
-                    animate();
-                }
-
-                else
-                {
-                    images.transform.GetChild(Motor.Instance.getImageNumber(x, y, isFromLeftToRight) - 1).gameObject.SetActive(true);
-                    animate();
+                    StartCoroutine ( checkPoint ());
                 }
             }
         }
 
-        public void concludeWord()
+        IEnumerator checkPoint()
         {
-            if (isFromLeftToRight)
-            {
-                if (y < size.y && grid[y + 1][x].tag.Equals("LetterBox"))
-                {
-                    y += 1;
-                    changeDirection();
-                }
-            }
+            Generator.Instance.saveCheckPointToDatabase ();
 
-            else
-            {
-                if (x < size.x && grid[y][x + 1].tag.Equals("LetterBox"))
-                {
-                    x += 1;
-                    changeDirection();
-                }
-            }
+            gameTime.Reset ();
+            gameTime.Start ();
 
-            highlightBox();
-        }
-
-        public void continueWord()
-        {
-            if (isFromLeftToRight)
-            {
-                if(grid[y][x + 1].GetComponentInChildren<Text>().text.Equals(""))
-                {
-                    x += 1;
-                }
-
-                else
-                {
-                    while(size.x > x && !grid[y][x + 1].tag.Equals("BlackBox") && !grid[y][x].GetComponentInChildren<Text>().text.Equals(""))
-                    {
-                        x += 1;
-                    }
-                }
-
-                if (x == size.x || grid[y][x + 1].tag.Equals("BlackBox"))
-                {
-                    changeDirection();
-                }
-            }
-
-            else
-            {
-                if (grid[y + 1][x].GetComponentInChildren<Text>().text.Equals(""))
-                {
-                    y += 1;
-                }
-
-                else
-                {
-                    while (size.y > y && !grid[y + 1][x].tag.Equals("BlackBox") && !grid[y][x].GetComponentInChildren<Text>().text.Equals(""))
-                    {
-                        y += 1;
-                    }
-                }
-
-                if (y == size.y || grid[y + 1][x].tag.Equals("BlackBox"))
-                {
-                    changeDirection();
-                }
-            }
-
-            highlightBox();
-        }
-
-        public void changeDirection()
-        {
-            old = new XYCouple(x, y, isFromLeftToRight);
-            isFromLeftToRight = !isFromLeftToRight;
-            highlightBox();
-        }
-
-        public void delete()
-        {
-            old = new XYCouple(x, y, isFromLeftToRight);
-
-            if (isFromLeftToRight)
-            {
-                if (grid[y][x].tag.Equals("LetterBox"))
-                {
-                    if ( !grid[y][x].GetComponentInChildren<Text>().text.Equals("") )
-                    {
-                        grid[y][x].GetComponentInChildren<Text>().text = "";
-                    }
-
-                    else if ( x > 1 && grid[y][x - 1].tag.Equals("LetterBox"))
-                    {
-                        x -= 1;
-                    }
-                }
-            }
-
-            else
-            {
-                if (grid[y][x].tag.Equals("LetterBox"))
-                {
-                    if (!grid[y][x].GetComponentInChildren<Text>().text.Equals(""))
-                    {
-                        grid[y][x].GetComponentInChildren<Text>().text = "";
-                    }
-
-                    else if (y > 1 && grid[y - 1][x].tag.Equals("LetterBox"))
-                    {
-                        y -= 1;
-                    }
-                }
-            }
-
-            highlightBox();
-        }
-        
-        public void imageDeactive()
-        {
-            for (int i = 0; i < 8; i++)
-            {
-                images.transform.GetChild(i).gameObject.SetActive(false);
-            }
-        }
-
-        private void FixedUpdate()
-        {
-            if(GridCreator.Instance.isThereGrid && x > 0 && y > 0)
-            {
-                if (isFromLeftToRight)
-                {
-                    if (grid[y][x].transform.GetChild(0).gameObject.activeSelf)
-                    {
-                        grid[y][x].transform.GetChild(0).gameObject.SetActive(false);
-                    }
-
-                    else
-                    {
-                        grid[y][x].transform.GetChild(0).gameObject.SetActive(true);
-                    }
-                }
-
-                else
-                {
-                    if (grid[y][x].transform.GetChild(1).gameObject.activeSelf)
-                    {
-                        grid[y][x].transform.GetChild(1).gameObject.SetActive(false);
-                    }
-
-                    else
-                    {
-                        grid[y][x].transform.GetChild(1).gameObject.SetActive(true);
-                    }
-                }
-            }
-        }
-
-        private void animate()
-        {
-            images.SetActive(true);
-
-            if (GUIManager.Instance.gameIsOnScreen.activeSelf)
-            {
-                images.GetComponent<Animator>().SetBool("SlideOut", true);
-            }
+            yield return new WaitForEndOfFrame ();
         }
     }
 }
+
