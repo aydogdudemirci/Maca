@@ -12,6 +12,7 @@ namespace Maca
         public GameObject timeoutObject;
         public Image fillingBar;
         public Text timeoutValue;
+        public Text barText;
 
         public Slider timeout;
 
@@ -30,6 +31,7 @@ namespace Maca
 
             fillingBar.fillAmount = value * 0.05f;
             timeoutValue.text = ( ( int ) value ).ToString ();
+            barText.text = ( ( int ) value ).ToString ();
         }
 
         public void OnEndDrag ( PointerEventData data )
