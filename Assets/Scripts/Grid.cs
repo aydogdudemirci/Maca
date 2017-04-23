@@ -27,7 +27,7 @@ namespace Maca
         {
             get
             {
-                return Generator.crossword;
+                return GamePlay.Instance.c;
             }
         }
 

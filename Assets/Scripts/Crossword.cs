@@ -60,7 +60,7 @@ namespace Maca
             return p.isAcross ? indexesOfAcrossWords[acrossID[p.index]][indexesOfAcrossWords[acrossID[p.index]].Count - 1] : indexesOfDownWords[downID[p.index]][indexesOfDownWords[downID[p.index]].Count - 1];
         }
 
-        internal Point getNextPretty(Point p)
+        internal Point getNextPrettySlot(Point p)
         {
             int next = p.isAcross ? 1 : x;
 

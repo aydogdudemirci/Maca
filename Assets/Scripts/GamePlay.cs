@@ -34,19 +34,13 @@ namespace Maca
 
         Stopwatch gameTime;
 
+        public Crossword c;
+
         List<GameObject> grid
         {
             get
             {
                 return Grid.grid;
-            }
-        }
-
-        Crossword c
-        {
-            get
-            {
-                return Generator.crossword;
             }
         }
 
@@ -57,6 +51,9 @@ namespace Maca
 
         public void createCrossword ()
         {
+            c = Generator.deepCopyOfTheCrossword ();
+            BackgroundGenerator.Instance.reset ();
+
             Grid.Instance.createGrid ();
 
             highlightedSlots = new Stack<int> ();
@@ -330,7 +327,7 @@ namespace Maca
                 grid[position.index].GetComponentInChildren<Text> ().text = input[0].ToString ();
                 c.filledSlots[position.index] = input[0].ToString ();
 
-                position = c.getNextPretty ( position );
+                position = c.getNextPrettySlot ( position );
             }
 
             else
@@ -350,7 +347,7 @@ namespace Maca
                     grid[position.index].GetComponent<Image> ().color = Color.Lerp ( start, end, Mathf.PingPong ( Time.time, 0.5f ) );
                 }
 
-                if ( gameTime.Elapsed.TotalSeconds > 5.0f )
+                if ( gameTime.Elapsed.TotalSeconds > 5.0f && !BackgroundGenerator.Instance.onProgress )
                 {
                     StartCoroutine ( checkPoint ());
                 }

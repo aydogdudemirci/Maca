@@ -26,6 +26,7 @@ namespace Maca
         public void OnValueChanged()
         {
             float value = timeout.value < 5 ? 5 : timeout.value;
+            timeout.value = value;
 
             fillingBar.fillAmount = value * 0.05f;
             timeoutValue.text = ( ( int ) value ).ToString ();
@@ -41,7 +42,7 @@ namespace Maca
             timeoutObject.GetComponent<Animator> ().runtimeAnimatorController = closing;
             timeoutObject.SetActive ( true );
             timeoutObject.GetComponent<Animator> ().SetBool ( "SlideOut", true );
-            yield return new WaitForSeconds (0.3f);
+            yield return new WaitForSeconds (0.25f);
             hidingObjects.SetActive ( true );
             timeoutObject.SetActive ( false );
         }
@@ -53,7 +54,7 @@ namespace Maca
             timeoutObject.GetComponent<Animator> ().runtimeAnimatorController = opening;
             timeoutObject.SetActive ( true );
             timeoutObject.GetComponent<Animator> ().SetBool ( "SlideOut", true );
-            yield return new WaitForSeconds ( 0.3f );
+            yield return new WaitForSeconds ( 0.25f );
         }
 
     }

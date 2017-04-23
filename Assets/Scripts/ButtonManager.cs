@@ -70,7 +70,7 @@ namespace Maca
                 {
                     if ( grid[i].tag.Equals ( "LetterBox" ) )
                     {
-                        grid[i].GetComponentInChildren<Text> ().text = crossword.answers[i];
+                        grid[i].GetComponentInChildren<Text> ().text = GamePlay.Instance.c.answers[i];
                     }
                 }
             }
@@ -81,7 +81,7 @@ namespace Maca
                 {
                     if ( grid[i].tag.Equals ( "LetterBox" ) )
                     {
-                        grid[i].GetComponentInChildren<Text> ().text = crossword.filledSlots[i];
+                        grid[i].GetComponentInChildren<Text> ().text = GamePlay.Instance.c.filledSlots[i];
                     }
                 }
             }

@@ -41,6 +41,9 @@ namespace Maca
         public double emergency;
         public bool isComplete;
         public bool reversing;
+        public bool isBackground;
+
+        public bool notGenerated;
 
         static int lifeCounter;
 
@@ -50,6 +53,8 @@ namespace Maca
             isEmergency = false;
             isComplete = false;
             reversing = false;
+            isBackground = false;
+            notGenerated = false;
         }
 
         public void generateCrossword ()
@@ -60,9 +65,14 @@ namespace Maca
 
             emergency = !isEmergency ? 3.75f : 2.75f;
 
-            if(!reversing)
+            if ( !reversing )
             {
                 createPuzzleGrid ();
+
+                if(notGenerated)
+                {
+                    return;
+                }
             }
 
             determineFreeSlots ();
@@ -86,7 +96,7 @@ namespace Maca
 
             createCrosswordAndCollectGarbage ( timer );
 
-            if ( (GUIManager.isContinue || GUIManager.isTimeout) && !reversing )
+            if ( ( GUIManager.isContinue || GUIManager.isTimeout ) && !reversing )
             {
                 isComplete = true;
             }
@@ -144,11 +154,11 @@ namespace Maca
             {
                 for ( int j = 0; j < getNormalSize ().y; j++ )
                 {
-                    puzzle.Add (temp[getNormalSize ().x * j + i] );
+                    puzzle.Add ( temp[getNormalSize ().x * j + i] );
                 }
             }
 
-            size = new Point ( getSize().x, getSize().y );
+            size = new Point ( getSize ().x, getSize ().y );
 
             reversing = true;
 
@@ -641,17 +651,30 @@ namespace Maca
         {
             if ( GUIManager.isContinue )
             {
-                popPuzzleFromDatabase ("To continue from last puzzle");
+                popPuzzleFromDatabase ( "To continue from last puzzle" );
             }
 
-            else if( GUIManager.isTimeout )
+            else if ( GUIManager.isTimeout )
             {
                 popPuzzleFromDatabase ( "Because of timeout" );
+
+                if(notGenerated)
+                {
+                    return;
+                }
             }
 
             else
             {
-                size = new Point ( getNormalSize().x, getNormalSize ().y );
+                if(isBackground)
+                {
+                    size = new Point ( BackgroundGenerator.criticalSize.x, BackgroundGenerator.criticalSize.y );
+                }
+
+                else
+                {
+                    size = new Point ( getNormalSize ().x, getNormalSize ().y );
+                }
 
                 string data = Patterns.getPattern (size);
 
@@ -682,7 +705,7 @@ namespace Maca
         }
 
 
-        public void reverse(int x, int y)
+        public void reverse ( int x, int y )
         {
             string query = string.Format("SELECT data FROM emergency WHERE x={0} AND y={1};", x, y);
 
@@ -701,24 +724,24 @@ namespace Maca
             dbcmd.Dispose ();
             reader.Close ();
 
-            foreach(string letter in data)
+            foreach ( string letter in data )
             {
                 string[] temp = letter.Split('#');
 
                 List<string> newData = new List<string>();
 
-                for(int i=2; i<temp.Length; i++ )
+                for ( int i = 2; i < temp.Length; i++ )
                 {
-                    newData.Add (temp[i]);
+                    newData.Add ( temp[i] );
                 }
 
                 string reverseData = "";
 
-                for(int i=0; i<x;  i++)
+                for ( int i = 0; i < x; i++ )
                 {
                     for ( int j = 0; j < y; j++ )
                     {
-                        reverseData += newData[j*x + i] + "#";
+                        reverseData += newData[j * x + i] + "#";
                     }
                 }
 
@@ -737,8 +760,18 @@ namespace Maca
             dbConnection = null;
         }
 
-        public void popPuzzleFromDatabase (string reason)
+        public void popPuzzleFromDatabase ( string reason )
         {
+            if ( isBackground )
+            {
+                size = new Point ( BackgroundGenerator.criticalSize.x, BackgroundGenerator.criticalSize.y );
+            }
+
+            else
+            {
+                size = new Point ( getNormalSize ().x, getNormalSize ().y );
+            }
+
             puzzle = new List<string> ();
 
             string query = "";
@@ -750,7 +783,7 @@ namespace Maca
 
             else if ( reason.Equals ( "Because of timeout" ) )
             {
-                query = string.Format ( "SELECT data FROM emergency WHERE x={0} AND y={1} ORDER BY RANDOM() LIMIT 1", getNormalSize().x, getNormalSize ().y );
+                query = string.Format ( "SELECT data FROM emergency WHERE x={0} AND y={1} ORDER BY RANDOM() LIMIT 1", size.x, size.y );
             }
 
             dbcmd = dbConnection.CreateCommand ();
@@ -762,6 +795,12 @@ namespace Maca
             while ( reader.Read () )
             {
                 data = reader.GetString ( 0 );
+            }
+
+            if(data.Equals(""))
+            {
+                notGenerated = true;
+                return;
             }
 
             dbcmd.Dispose ();
@@ -798,14 +837,14 @@ namespace Maca
 
         public void saveCheckPointToDatabase ()
         {
-            string data = crossword.x.ToString() + "#" + crossword.y.ToString() + "#";
+            string data = GamePlay.Instance.c.x.ToString() + "#" + GamePlay.Instance.c.y.ToString() + "#";
 
-            foreach ( string letter in crossword.answers )
+            foreach ( string letter in GamePlay.Instance.c.answers )
             {
                 data += letter + "#";
             }
 
-            foreach ( string letter in crossword.filledSlots )
+            foreach ( string letter in GamePlay.Instance.c.filledSlots )
             {
                 data += letter + "#";
             }
@@ -909,7 +948,102 @@ namespace Maca
 
         private Point getNormalSize ()
         {
-            return Patterns.normalize (getSize().x, getSize().y);
+            return Patterns.normalize ( getSize ().x, getSize ().y );
+        }
+
+        public static Crossword deepCopyOfTheCrossword ()
+        {
+            Crossword c = new Crossword();
+
+            c.x = crossword.x;
+            c.y = crossword.y;
+            c.polePosition = crossword.polePosition;
+            c.difficulty = crossword.difficulty;
+            c.blackBoxPercentage = crossword.blackBoxPercentage;
+            c.creationTime = crossword.creationTime;
+            c.category = crossword.category;
+            c.creationDate = crossword.creationDate;
+
+            foreach(string s in crossword.filledSlots )
+            {
+                c.filledSlots.Add ( s );
+            }
+
+            foreach ( string s in crossword.questionsOfAcrossWords )
+            {
+                c.questionsOfAcrossWords.Add ( s );
+            }
+
+            foreach ( string s in crossword.questionsOfDownWords )
+            {
+                c.questionsOfDownWords.Add ( s );
+            }
+
+            foreach ( string s in crossword.answers )
+            {
+                c.answers.Add ( s );
+            }
+
+            foreach ( string s in crossword.acrossWords )
+            {
+                c.acrossWords.Add ( s );
+            }
+
+            foreach ( string s in crossword.downWords )
+            {
+                c.downWords.Add ( s );
+            }
+
+            foreach ( int i in crossword.imagesOfAcrossWords )
+            {
+                c.imagesOfAcrossWords.Add ( i );
+            }
+
+            foreach ( int i in crossword.imagesOfDownWords )
+            {
+                c.imagesOfDownWords.Add ( i );
+            }
+
+            foreach ( int i in crossword.acrossID )
+            {
+                c.acrossID.Add ( i );
+            }
+
+            foreach ( int i in crossword.downID )
+            {
+                c.downID.Add ( i );
+            }
+
+            foreach ( bool b in crossword.grid )
+            {
+                c.grid.Add ( b );
+            }
+
+            foreach ( List<int> list in crossword.indexesOfAcrossWords )
+            {
+                List<int> temp = new List<int>();
+
+                foreach(int i in list)
+                {
+                    temp.Add (i);
+                }
+
+                c.indexesOfAcrossWords.Add ( temp );
+            }
+
+            foreach ( List<int> list in crossword.indexesOfDownWords )
+            {
+                List<int> temp = new List<int>();
+
+                foreach ( int i in list )
+                {
+                    temp.Add ( i );
+                }
+
+                c.indexesOfDownWords.Add ( temp );
+            }
+
+            return c;
         }
     }
 }

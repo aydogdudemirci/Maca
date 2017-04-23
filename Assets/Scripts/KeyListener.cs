@@ -15,6 +15,8 @@ namespace Maca
         {
             if ( Input.anyKeyDown && Grid.Instance.isThereGrid && !GamePlay.Instance.checkEnd () )
             {
+                BackgroundGenerator.Instance.processDecision ();
+
                 if ( Input.GetKeyDown ( KeyCode.DownArrow ) )
                 {
                     GamePlay.Instance.userInteract ( "DOWN" );

@@ -64,12 +64,15 @@ namespace Maca
 
         public void goGameScreen ()
         {
-            if ( introScreen.activeSelf )
+            if(!BackgroundGenerator.Instance.onProgress)
             {
-                isContinue = true;
-            }
+                if ( introScreen.activeSelf )
+                {
+                    isContinue = true;
+                }
 
-            StartCoroutine ( makeTransitionToGameScreen () );
+                StartCoroutine ( makeTransitionToGameScreen () );
+            }
         }
 
         private void makeAllScenesDisable ()
@@ -160,7 +163,7 @@ namespace Maca
                 loadSquare.GetComponent<Image> ().fillAmount = 1;
                 animateTopdown ( loadScreen );
 
-                while ( !Generator.Instance.isComplete)
+                while ( !Generator.Instance.isComplete )
                 {
                     loadSquare.GetComponent<Image> ().color = Color.Lerp ( start, end, Mathf.PingPong ( Time.time, 1 ) );
                     yield return new WaitForSeconds (0.01f);
@@ -181,7 +184,7 @@ namespace Maca
                     GO.IsBackground = true;
                     GO.Start ();
 
-                    while ( !Generator.Instance.isComplete)
+                    while ( !Generator.Instance.isComplete && !Generator.Instance.notGenerated )
                     {
                         loadSquare.GetComponent<Image> ().color = Color.Lerp ( end, emergency, Mathf.PingPong ( Time.time * 2, 0.5f ) );
                         yield return new WaitForSeconds ( 0.01f );
@@ -189,7 +192,7 @@ namespace Maca
 
                     Generator.Instance.isComplete = false;
 
-                    if ( Patterns.reversingNecessary () )
+                    if ( Patterns.reversingNecessary () && !Generator.Instance.notGenerated)
                     {
                         Generator.Instance.reverseCrossword ();
                     }
@@ -225,31 +228,50 @@ namespace Maca
                 isContinue = false;
                 isTimeout = false;
 
-                Generator.Instance.isComplete = false;
-
-                GamePlay.Instance.createCrossword ();
-
-                loadSquareFiller.gameObject.SetActive (true);
-                loadSquareFiller.GetComponent<Image> ().fillAmount = 0;
-                loadSquareFiller.GetComponent<Image> ().color = loadSquare.GetComponent<Image> ().color;
-
-                while( loadSquareFiller.GetComponent<Image> ().fillAmount < 1)
+                if(!Generator.Instance.notGenerated)
                 {
-                    loadSquareFiller.GetComponent<Image> ().fillAmount += 0.05f;
-                    yield return new WaitForEndOfFrame ();
+                    Generator.Instance.isComplete = false;
+
+                    GamePlay.Instance.createCrossword ();
+
+                    loadSquareFiller.gameObject.SetActive ( true );
+                    loadSquareFiller.GetComponent<Image> ().fillAmount = 0;
+                    loadSquareFiller.GetComponent<Image> ().color = loadSquare.GetComponent<Image> ().color;
+
+                    while ( loadSquareFiller.GetComponent<Image> ().fillAmount < 1 )
+                    {
+                        loadSquareFiller.GetComponent<Image> ().fillAmount += 0.05f;
+                        yield return new WaitForEndOfFrame ();
+                    }
                 }
 
                 totalTime.Stop ();
                 totalTime.Reset ();
             }
 
-            animateDisappear ( loadScreen );
-            yield return new WaitForSeconds ( 0.4f );
+            if( !Generator.Instance.notGenerated )
+            {
+                animateDisappear ( loadScreen );
+                yield return new WaitForSeconds ( 0.4f );
 
-            loadSquareFiller.gameObject.SetActive ( false );
-            makeAllScenesDisable ();
-            animateTopdown ( target );
-            loadScreen.GetComponent<Transform> ().localScale = new Vector3 ( 1.0f, 1.0f, 1.0f );
+                loadSquareFiller.gameObject.SetActive ( false );
+                makeAllScenesDisable ();
+                animateTopdown ( target );
+                loadScreen.GetComponent<Transform> ().localScale = new Vector3 ( 1.0f, 1.0f, 1.0f );
+            }
+
+            else
+            {
+                animateDisappear ( loadScreen );
+                yield return new WaitForSeconds ( 0.4f );
+
+                loadSquareFiller.gameObject.SetActive ( false );
+                makeAllScenesDisable ();
+                animateTopdown ( gameModeSettingsScreen );
+                loadScreen.GetComponent<Transform> ().localScale = new Vector3 ( 1.0f, 1.0f, 1.0f );
+            }
+
+            Generator.Instance.notGenerated = false;
         }
 
         private IEnumerator makeTransitionToIntroScreen ()
